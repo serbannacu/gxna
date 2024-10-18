@@ -1,0 +1,50 @@
+#include "RandomPermutation.h"
+
+#include <cstdlib>
+#include <iomanip>
+#include <iostream>
+
+namespace gxna {
+
+inline int urand(int n) { // uniform random between 0 and n-1
+    return (std::rand() / (((double) RAND_MAX) + 1)) * n;
+}
+
+void Permutation::randomize(size_t start, size_t len) {
+    auto p = &m_v[start];
+    for (int i = 1; i < len; ++i) {
+        size_t j = urand(i+1); // uniform among 0, 1, ..., i
+        auto temp = p[i];
+        p[i] = p[j];
+        p[j] = temp;
+    }
+}
+
+void PermutationHistogram::print(std::ostream& os, int prec) const {
+    os << std::fixed << std::setprecision(prec);
+    for (size_t i = 0; i < m_n; ++i) {
+        for (size_t j = 0; j < m_n; ++j)
+            os << m_count[i][j] / double(m_n_add) << ' ';
+        os << '\n';
+    }
+}
+
+bool PermutationGenerator::next() {
+    if (m_count >= m_limit)
+        return false;
+    if (m_count++) // first next() call does not call update(), leaves Id permutation in place
+        update();
+    if (m_verbose)
+        showProgress();
+    return true;
+}
+
+void PermutationGenerator::showProgress() {
+    int val = 100 * m_count / m_limit;
+    if (m_percentage != val) {
+        m_percentage = val;
+        std::cerr << "Permutation " << m_count << '/' << m_limit << ' ' << val << '%' << (m_count == m_limit ? '\n' : '\r');
+    }
+}
+
+} // namespace gxna
