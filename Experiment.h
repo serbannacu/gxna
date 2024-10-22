@@ -31,6 +31,7 @@ private:
 };
 
 struct GeneData {
+    void printNameId(std::ostream& os) const;
     void print(std::ostream& os) const;
     std::string label() const;
 

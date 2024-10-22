@@ -49,10 +49,14 @@ void PhenotypeVector::filter(const std::vector<std::string>& v) {
     throw Exception("PhenotypeVector::filter not implemented");
 }
 
+void GeneData::printNameId(std::ostream& os) const {
+    os << std::setw(10) << std::left << name << ' '
+       << std::setw(6) << std::right << id << ' ';
+}
+
 void GeneData::print(std::ostream& os) const {
+    printNameId(os);
     os << std::fixed << std::setprecision(3)
-       << std::setw(10) << std::left << name << ' '
-       << std::setw(6) << std::right << id << ' '
        << std::setw(2) << nProbes << ' '
        << std::setw(7) << sd << ' '
        << std::setw(7) << score
@@ -351,19 +355,24 @@ static void endHTMLFrame(std::ostream& os) {
     os << "</html>" << '\n';
 }
 
+template<typename T>
+void addCell(std::ostream& os, const T& val) {
+    os << "<td>" << val << "</td>" << '\n';
+}
+
 static void addRow(std::ostream& os, const std::string& url, int n, const std::string& root, const std::string& rootid, int size,
                    double score, double rawp, double adjp) {                 
     os << "<tr>" << '\n';
     if (url.size())
-        os << "<td><a href=\"" << url << "\" target=\"frame2\">" << n << "</a></td>" << '\n';
+        addCell(os, "<a href=\"" + url + "\" target=\"frame2\">" + std::to_string(n) + "</a>");
     else
-        os << "<td>" << n << "</td>" << '\n';
-    os << "<td>" << root << "</td>" << '\n';
-    os << "<td>" << rootid << "</td>" << '\n';
-    os << "<td>" << size << "</td>" << '\n';
-    os << "<td>" << score << "</td>" << '\n';
-    os << "<td>" << rawp << "</td>" << '\n';
-    os << "<td>" << adjp << "</td>" << '\n';
+        addCell(os, n);
+    addCell(os, root);
+    addCell(os, rootid);
+    addCell(os, size);
+    addCell(os, score);
+    addCell(os, rawp);
+    addCell(os, adjp);
     os << "</tr>" << '\n';
 }
 
@@ -375,31 +384,38 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
     std::string frameFilename = "frame1.html";
     std::string startingFrame;
 
-    std::ofstream osArgs((path + "/" + "parameters").c_str());
-    std::ofstream osResults((path + "/" + "results").c_str());
+    std::ofstream osArgs((path + "/" + "parameters.txt").c_str());
+    std::ofstream osResults((path + "/" + "results.txt").c_str());
     std::ofstream osFrame((path + "/" + frameFilename).c_str());
 
     args.print(osArgs);
     beginHTMLFrame(osFrame);
 
     std::vector<bool> printed(m_gene.size());
-    osResults.precision(4);
+    osResults << std::fixed << std::setprecision(3);
     int nDetailed = 0;
     for (int i = 0; i < m_testData.size(); ++i) {
         auto& testData = m_testData[mt.getRank(i)];
-        int root = testData.root;
-        osResults << i << ' ' << m_gene[root] << ' ';
+        auto& rootData = m_gene[testData.root];
+        int size = testData.cluster.size();
+        double score = testData.score, rawP = mt.getRawP(i), adjP = mt.getAdjP(i);
+
+        osResults << std::setw(5) << i << ' ';
+        rootData.printNameId(osResults);
+        osResults << std::setw(3) << size << ' '
+                  << std::setw(6) << score << ' '
+                  << rawP << ' '
+                  << adjP << ' ';
         for (auto& v : testData.cluster)
-            osResults << m_gene[v].id << ' ';
-        double rawP = mt.getRawP(i), adjP = mt.getAdjP(i);
-        osResults << testData.score << ' ' << rawP << ' ' << adjP << '\n';
+            osResults << std::setw(6) << m_gene[v].id << ' ';
+        osResults << '\n';
 
         // now check overlap between current and previous clusters
-        int n1 = 0, n2 = testData.cluster.size();
+        int nPrinted = 0;
         for (auto& v : testData.cluster)
             if (printed[v])
-                ++n1;
-        if (n1 <= args.maxOverlap * n2) { // low overlap, OK to print
+                ++nPrinted;
+        if (nPrinted <= args.maxOverlap * size) { // low overlap, OK to print
             for (auto& v : testData.cluster)
                 printed[v] = true; // mark as printed
             std::string url;
@@ -408,7 +424,7 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
                 std::string filenameTXT = path + "/" + prefix + "txt";
                 std::string filenameDOT = path + "/" + prefix + "dot";
                 std::string filenameSVG = path + "/" + prefix + "svg";
-                bool draw = args.draw && n2 > 1; // do not draw singletons
+                bool draw = args.draw && size > 1; // do not draw singletons
                 url = prefix + (draw ? "svg" : "txt");
                 if (!startingFrame.size())
                     startingFrame = url;
@@ -419,7 +435,7 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
                     osTXT << m_gene[v] << '\n';
             }
             if (nDetailed < args.nRows)
-                addRow(osFrame, url, i, m_gene[root].name, m_gene[root].id, n2, testData.score, rawP, adjP);
+                addRow(osFrame, url, i, rootData.name, rootData.id, size, score, rawP, adjP);
             ++nDetailed;
         }
     }
