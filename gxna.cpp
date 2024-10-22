@@ -8,7 +8,6 @@
 int main(int argc, char *argv[]) {
     gxna::Args args;
     try {
-        args.read("gxna.arg", false); // no error if file does not exist
         args.parse(argc, argv);
         args.check();
     }

@@ -3,6 +3,7 @@
 #include "Exception.h"
 
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 
@@ -91,7 +92,9 @@ void Args::parse(int argc, char *argv[]) {
 
 void Args::read(const std::string& filename, bool strict) {
     std::ifstream is(filename.c_str());
-    if (!is && strict)
+    if (is)
+        std::cerr << "Reading args from " << filename << '\n';
+    else if (strict)
         throw Exception("Could not open " + filename);
     std::string key, val;
     while (is >> key >> val)
@@ -174,6 +177,8 @@ void Args::setFilenames() {
         phenotypeFile = name + ".phe";
     if (!typeFile.size())
         typeFile = name + ".typ";
+    auto argsFile = name + ".arg";
+    read(inputDir + "/" + argsFile, false); // ignore if file is missing
 }
 
 bool Args::setImpl(const std::string& key, const std::string& val) {
