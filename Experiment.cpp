@@ -70,27 +70,23 @@ std::string GeneData::label() const {
     return os.str();
 }
 
-inline std::string make_path(const std::string& dir, const std::string& name) {
-    return dir + "/" + name;
-}
-
 Experiment::Experiment(Args& args_)
     : args(args_)
 {
-    m_phenotype.read(make_path(args.inputDir, args.phenotypeFile));
+    m_phenotype.read(args.inputDir + "/" + args.phenotypeFile);
     if (args.phenotypes.size())
         m_phenotype.filter(args.phenotypes);
     if (args.invariantPerms) { // read secondary phenotype, if needed
-        m_phenotypeInvariant.read(make_path(args.inputDir, args.typeFile));
+        m_phenotypeInvariant.read(args.inputDir + "/" + args.typeFile);
         if (m_phenotypeInvariant.nSamples() != m_phenotype.nSamples())
             throw Exception("Bad number of samples in " + args.typeFile);
     }
 
-    readProbes(make_path(args.refDir, args.probeFile));
-    readGeneNames(make_path(args.refDir, args.geneFile));
-    readExpression(make_path(args.inputDir, args.expressionFile));
+    readProbes(args.refDir + "/" + args.probeFile);
+    readGeneNames(args.refDir + "/" + args.geneFile);
+    readExpression(args.inputDir + "/" + args.expressionFile);
     m_geneNetwork.setSize(m_gene.size()); // so genes with no interactions are still included in the network
-    m_geneNetwork.readInteractions(make_path(args.refDir, args.interactionFile), m_geneID2index);
+    m_geneNetwork.readInteractions(args.refDir + "/" + args.interactionFile, m_geneID2index);
 
     for (auto& data : m_gene) {
         FastDataSet d(data.expression);
@@ -388,7 +384,7 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
 
     std::vector<bool> printed(m_gene.size());
     osResults.precision(4);
-    int nDOT = 0;
+    int nDetailed = 0;
     for (int i = 0; i < m_testData.size(); ++i) {
         auto& testData = m_testData[mt.getRank(i)];
         int root = testData.root;
@@ -403,27 +399,28 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
         for (auto& v : testData.cluster)
             if (printed[v])
                 ++n1;
-        if (n1 <= args.maxOverlap * n2) { // ok to print
+        if (n1 <= args.maxOverlap * n2) { // low overlap, OK to print
             for (auto& v : testData.cluster)
                 printed[v] = true; // mark as printed
             std::string url;
-            if (nDOT < args.nDetailed) {
-                std::string prefix = "graph_" + std::to_string(nDOT) + ".";
+            if (nDetailed < args.nDetailed) {
+                std::string prefix = "graph_" + std::to_string(nDetailed) + ".";
                 std::string filenameTXT = path + "/" + prefix + "txt";
                 std::string filenameDOT = path + "/" + prefix + "dot";
                 std::string filenameSVG = path + "/" + prefix + "svg";
-                url = prefix + (args.draw ? "svg" : "txt");
+                bool draw = args.draw && n2 > 1; // do not draw singletons
+                url = prefix + (draw ? "svg" : "txt");
                 if (!startingFrame.size())
                     startingFrame = url;
 
-                m_geneNetwork.write(testData.cluster, filenameDOT, args.draw ? filenameSVG : "");
+                m_geneNetwork.write(testData.cluster, filenameDOT, draw ? filenameSVG : "");
                 std::ofstream osTXT(filenameTXT.c_str());
                 for (auto& v : testData.cluster)
                     osTXT << m_gene[v] << '\n';
             }
-            if (nDOT < args.nRows)
+            if (nDetailed < args.nRows)
                 addRow(osFrame, url, i, m_gene[root].name, m_gene[root].id, n2, testData.score, rawP, adjP);
-            ++nDOT;
+            ++nDetailed;
         }
     }
     endHTMLFrame(osFrame);
