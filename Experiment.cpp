@@ -120,17 +120,15 @@ void Experiment::run() {
     std::cerr << "Testing " << m_testData.size() << " objects\n";
     
     MultipleTest<Experiment> mt(*this, m_testData.size());
-    if (args.invariantPerms) {
-        InvariantPermutationGenerator ppg(m_phenotype.nSamples(), args.nPerms, m_phenotypeInvariant.type());
-        ppg.setVerbose(true);
-        mt.test(ppg, args.maxTscaled);
-    }
-    else {
-        PermutationGenerator ppg(m_phenotype.nSamples(), args.nPerms);
-        ppg.setVerbose(true);
-        mt.test(ppg, args.maxTscaled);
-    }
+    PermutationGenerator *pg;
+    if (args.invariantPerms)
+        pg = new InvariantPermutationGenerator(m_phenotype.nSamples(), args.nPerms, m_phenotypeInvariant.type());
+    else
+        pg = new UniformPermutationGenerator(m_phenotype.nSamples(), args.nPerms);
+    pg->setVerbose(true);
+    mt.test(*pg, args.maxTscaled);
     printResults(mt);
+    delete pg;
 }
 
 static double computeScore(const std::vector<double>& expression, const std::vector<int>& phenotype, int nPhenotypes) {

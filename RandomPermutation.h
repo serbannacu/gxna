@@ -67,8 +67,8 @@ private:
     size_t m_n_add;
 };
 
-// PermutationGenerator yields a sequence of uniform random permutations of the integers {0, 1, 2, ..., n - 1}
-// first permutation returned is guaranteed to be Id
+// PermutationGenerator yields a sequence of permutations of the integers {0, 1, 2, ..., n - 1}
+// The first permutation returned is guaranteed to be Id
 
 class PermutationGenerator {
 public:
@@ -80,6 +80,8 @@ public:
           m_verbose(false)
     {}
 
+    virtual ~PermutationGenerator() = default;
+    
     void setVerbose(bool verbose = true) {
         m_verbose = verbose;
     }
@@ -98,50 +100,42 @@ protected:
     Permutation m_perm;
 
 private:
-    virtual void update() {
-        m_perm.randomize();
-    }
-
+    virtual void update() = 0; // generate next permutation, store in m_perm
     void showProgress();
 
     size_t m_count; // number of permutations already generated
     size_t m_limit; // total number of permutations to generate
-    int m_percentage;
+    int m_percentage; // used to show progress
     bool m_verbose;
 };
 
-// InvariantPermutationGenerator yields a sequence of uniform invariant random permutations
-// first permutation returned is guaranteed to be Id
+// Uniform random permutation
+
+class UniformPermutationGenerator : public PermutationGenerator {
+public:
+    UniformPermutationGenerator(size_t n, size_t limit)
+        : PermutationGenerator(n, limit)
+    {}
+    
+private:
+    virtual void update() {
+        m_perm.randomize();
+    }
+};
+
+// InvariantPermutationGenerator yields a sequence of uniform INVARIANT random permutations
 // Each element in {0, 1, 2, ..., n - 1} has an assigned type
 // Invariance means all permutations $p$ preserve type, so $p(i)$ has the same type as $i$ for all $i$
 // Thus each permutation generated induces an uniform random permutation within each type
 
-// the ctor expectes a vector of types in sequential order, so {0, 0, 1, 1, 1} is OK but {0, 1, 0, 1, 1} is not
+// The ctor expectes a vector of types in sequential order, so {0, 0, 1, 1, 1} is OK but {0, 1, 0, 1, 1} is not
 
 class InvariantPermutationGenerator : public PermutationGenerator {
 public:
-    InvariantPermutationGenerator(size_t n, size_t limit, const std::vector<int>& types)
-        : PermutationGenerator(n, limit)
-    {
-        assert(n == types.size());
-        int type;
-        for (auto val : types) {
-            if (m_typeCount.empty() || type != val) {
-                type = val;
-                m_typeCount.emplace_back(0);
-            }
-            ++m_typeCount.back();
-        }
-    }
+    InvariantPermutationGenerator(size_t n, size_t limit, const std::vector<int>& types);
 
 private:
-    void update() {
-        size_t sum = 0;
-        for (auto val : m_typeCount) {
-            m_perm.randomize(sum, val);
-            sum += val;
-        }
-    }
+    virtual void update();
 
     std::vector<int> m_typeCount;
 };

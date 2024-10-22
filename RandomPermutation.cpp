@@ -47,4 +47,26 @@ void PermutationGenerator::showProgress() {
     }
 }
 
+InvariantPermutationGenerator::InvariantPermutationGenerator(size_t n, size_t limit, const std::vector<int>& types)
+    : PermutationGenerator(n, limit)
+{
+    assert(n == types.size());
+    int type;
+    for (auto val : types) {
+        if (m_typeCount.empty() || type != val) {
+            type = val;
+            m_typeCount.emplace_back(0);
+        }
+        ++m_typeCount.back();
+    }
+}
+
+void InvariantPermutationGenerator::update() {
+    size_t sum = 0;
+    for (auto val : m_typeCount) {
+        m_perm.randomize(sum, val);
+        sum += val;
+    }
+}
+
 } // namespace gxna
