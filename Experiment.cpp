@@ -79,7 +79,7 @@ Experiment::Experiment(Args& args_)
     m_phenotype.read(make_path(args.inputDir, args.phenotypeFile));
     if (args.phenotypes.size())
         m_phenotype.filter(args.phenotypes);
-    if (args.useInvariantPerms) { // read secondary phenotype, if needed
+    if (args.invariantPerms) { // read secondary phenotype, if needed
         m_phenotypeInvariant.read(make_path(args.inputDir, args.typeFile));
         if (m_phenotypeInvariant.nSamples() != m_phenotype.nSamples())
             throw Exception("Bad number of samples in " + args.typeFile);
@@ -120,7 +120,7 @@ void Experiment::run() {
     std::cerr << "Testing " << m_testData.size() << " objects\n";
     
     MultipleTest<Experiment> mt(*this, m_testData.size());
-    if (args.useInvariantPerms) {
+    if (args.invariantPerms) {
         InvariantPermutationGenerator ppg(m_phenotype.nSamples(), args.nPerms, m_phenotypeInvariant.type());
         ppg.setVerbose(true);
         mt.test(ppg, args.maxTscaled);

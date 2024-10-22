@@ -40,7 +40,7 @@ Args::Args() :
     scalingExponent(0.6),
     maxTscaled(false),
     nPerms(100),
-    useInvariantPerms(false),
+    invariantPerms(false),
     shrink(false),
     seed(5),
     graphCount(25),
@@ -123,7 +123,7 @@ void Args::print(std::ostream& os) const {
     os << "scalingExponent " << scalingExponent << '\n';
     os << "maxTscaled " << maxTscaled << '\n';
     os << "nPerms " << nPerms << '\n';
-    os << "useInvariantPerms " << useInvariantPerms << '\n';
+    os << "invariantPerms " << invariantPerms << '\n';
     os << "shrink " << shrink << '\n';
     os << "seed " << seed << '\n';
     os << "graphCount " << graphCount << '\n';
@@ -225,8 +225,8 @@ bool Args::setImpl(const std::string& key, const std::string& val) {
         from_string(maxTscaled, val);
     else if (key == "nPerms")
         from_string(nPerms, val);
-    else if (key == "useInvariantPerms")
-        from_string(useInvariantPerms, val);
+    else if (key == "invariantPerms")
+        from_string(invariantPerms, val);
     else if (key == "shrink")
         from_string(shrink, val);
     else if (key == "seed")

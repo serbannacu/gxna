@@ -47,7 +47,7 @@ struct Args {
     // algorithm p-value calculations
     bool maxTscaled;
     int nPerms;
-    bool useInvariantPerms;
+    bool invariantPerms;
 
     // algorithm other parameters
     bool shrink; // adjust gene scores using empirical Bayes shrinkage
