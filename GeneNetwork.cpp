@@ -160,6 +160,7 @@ void GeneNetwork::print(std::ostream& os) const {
             os << v << ' ' << degree(v) << " : " << m_neighbors[v] << '\n';
 }
 
+// Could draw graphs directly via Graphviz API to avoid overhead of multiple system() calls
 void GeneNetwork::write(const NodeList& subgraph, const std::string& filenameDOT, const std::string& filenameSVG) const {
     std::ofstream osDOT(filenameDOT.c_str());
     writeDOT(subgraph, osDOT);

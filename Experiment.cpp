@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <filesystem>
 
 namespace gxna {
 
@@ -127,8 +128,12 @@ void Experiment::run() {
         pg = new UniformPermutationGenerator(m_phenotype.nSamples(), args.nPerms);
     pg->setVerbose(true);
     mt.test(*pg, args.maxTscaled);
-    printResults(mt);
     delete pg;
+
+    for (size_t i = 0; i < m_gene.size(); ++i) // need to set labels before calling printResults
+        m_geneNetwork.setLabel(i, m_gene[i].label()); // label includes gene score
+
+    printResults(mt);
 }
 
 static double computeScore(const std::vector<double>& expression, const std::vector<int>& phenotype, int nPhenotypes) {
@@ -318,23 +323,69 @@ void Experiment::readExpression(const std::string& filename) {
 
 // output functions
 
-std::string Experiment::graphFilename(int i, const std::string& type) const {
-    return args.name + "_" + args.version + "_" + std::to_string(i) + "." + type; 
+void Experiment::writeHTML(const std::string& htmlFilename, const std::string& frameFilename, const std::string& startingFrame) const {
+    std::cerr << "Writing output to " << htmlFilename << '\n';
+    std::ofstream os(htmlFilename.c_str());
+    os << "<html>" << '\n';
+    os << "<title>" << "GXNA " << args.name << ' ' << args.version << "</title>" << '\n';
+    os << "<frameset cols=\"35%,65%\">" << '\n';
+    os << "<frame src=\"" << frameFilename << "\">" << '\n';
+    os << "<frame src=\"" << startingFrame << "\" name=\"frame2\">" << '\n';
+    os << "</frameset>" << '\n';
+    os << "</html>" << '\n';
+}
+
+static void beginHTMLFrame(std::ostream& os) {
+    os << "<html>" << '\n';
+    os << "<table border=\"1\">" << '\n';
+    os << "<tr>" << '\n';
+    os << "<th>rank</th>" << '\n';
+    os << "<th>root</th>" << '\n';
+    os << "<th>rootid</th>" << '\n';
+    os << "<th>size</th>" << '\n';
+    os << "<th>score</th>" << '\n';
+    os << "<th>rawp</th>" << '\n';
+    os << "<th>adjp</th>" << '\n';
+    os << "</tr>" << '\n';
+    os.precision(3);
+}
+
+static void endHTMLFrame(std::ostream& os) {
+    os << "</table>" << '\n';
+    os << "</html>" << '\n';
+}
+
+static void addRow(std::ostream& os, const std::string& url, int n, const std::string& root, const std::string& rootid, int size,
+                   double score, double rawp, double adjp) {                 
+    os << "<tr>" << '\n';
+    if (url.size())
+        os << "<td><a href=\"" << url << "\" target=\"frame2\">" << n << "</a></td>" << '\n';
+    else
+        os << "<td>" << n << "</td>" << '\n';
+    os << "<td>" << root << "</td>" << '\n';
+    os << "<td>" << rootid << "</td>" << '\n';
+    os << "<td>" << size << "</td>" << '\n';
+    os << "<td>" << score << "</td>" << '\n';
+    os << "<td>" << rawp << "</td>" << '\n';
+    os << "<td>" << adjp << "</td>" << '\n';
+    os << "</tr>" << '\n';
 }
 
 void Experiment::printResults(const MultipleTest<Experiment>& mt) {
-    for (size_t i = 0; i < m_gene.size(); ++i) // need to compute scores first
-        m_geneNetwork.setLabel(i, m_gene[i].label());
+    std::string path = args.outputDir + "/" + args.name + "/" + args.version;
+    std::filesystem::create_directories(path);
+    
+    std::string htmlFilename = "index.html";
+    std::string frameFilename = "frame1.html";
+    std::string startingFrame;
 
-    auto prefix = args.name + "_" + args.version;
-    std::ofstream osArgs(make_path(args.outputDir, prefix + ".arg").c_str());
-    std::ofstream osResults(make_path(args.outputDir, prefix + ".res").c_str());
-    std::ofstream osHTML(make_path(args.outputDir, prefix + ".html").c_str());
-    auto frameFilename = prefix + "_frame1.html";
-    std::ofstream osFrame(make_path(args.outputDir, frameFilename).c_str());
+    std::ofstream osArgs((path + "/" + "parameters").c_str());
+    std::ofstream osResults((path + "/" + "results").c_str());
+    std::ofstream osFrame((path + "/" + frameFilename).c_str());
 
     args.print(osArgs);
-    beginHTML(osHTML, osFrame, frameFilename); // prepare html files
+    beginHTMLFrame(osFrame);
+
     std::vector<bool> printed(m_gene.size());
     osResults.precision(4);
     int nDOT = 0;
@@ -347,7 +398,7 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
         double rawP = mt.getRawP(i), adjP = mt.getAdjP(i);
         osResults << testData.score << ' ' << rawP << ' ' << adjP << '\n';
 
-        // now check if we print to html and make graphs
+        // now check overlap between current and previous clusters
         int n1 = 0, n2 = testData.cluster.size();
         for (auto& v : testData.cluster)
             if (printed[v])
@@ -355,69 +406,28 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
         if (n1 <= args.maxOverlap * n2) { // ok to print
             for (auto& v : testData.cluster)
                 printed[v] = true; // mark as printed
-            if (nDOT < args.graphCount) {
-                std::string filenameDOT = make_path(args.outputDir, graphFilename(nDOT, "dot"));
-                std::string filenameSVG = make_path(args.outputDir, graphFilename(nDOT, "svg"));
+            std::string url;
+            if (nDOT < args.nDetailed) {
+                std::string prefix = "graph_" + std::to_string(nDOT) + ".";
+                std::string filenameTXT = path + "/" + prefix + "txt";
+                std::string filenameDOT = path + "/" + prefix + "dot";
+                std::string filenameSVG = path + "/" + prefix + "svg";
+                url = prefix + (args.draw ? "svg" : "txt");
+                if (!startingFrame.size())
+                    startingFrame = url;
+
                 m_geneNetwork.write(testData.cluster, filenameDOT, args.draw ? filenameSVG : "");
-                std::ofstream osTXT(make_path(args.outputDir, graphFilename(nDOT, "txt")).c_str());
+                std::ofstream osTXT(filenameTXT.c_str());
                 for (auto& v : testData.cluster)
                     osTXT << m_gene[v] << '\n';
             }
-            if (nDOT < args.maxRows)
-                addRow(osFrame, i, nDOT, m_gene[root].name, m_gene[root].id, n2, testData.score, rawP, adjP);
+            if (nDOT < args.nRows)
+                addRow(osFrame, url, i, m_gene[root].name, m_gene[root].id, n2, testData.score, rawP, adjP);
             ++nDOT;
         }
     }
-    endHTML(osHTML);
-}
-
-void Experiment::beginHTML(std::ostream& osHTML, std::ostream& osFrame, const std::string& frameFilename) const {
-    std::string startingFrame = graphFilename(0, args.draw ? "svg" : "txt");
-
-    // write main html file
-    osHTML << "<html>" << '\n';
-    osHTML << "<title>" << "GXNA " << args.name << ' ' << args.version << "</title>" << '\n';
-    osHTML << "<frameset cols=\"35%,65%\">" << '\n';
-    osHTML << "<frame src=\"" << frameFilename << "\">" << '\n';
-    osHTML << "<frame src=\"" << startingFrame << "\" name=\"frame2\">" << '\n';
-    osHTML << "</frameset>" << '\n';
-    osHTML << "</html>" << '\n';
-
-    // start frame html file
-    osFrame << "<html>" << '\n';
-    osFrame << "<table border=\"1\">" << '\n';
-    osFrame << "<tr>" << '\n';
-    osFrame << "<th>rank</th>" << '\n';
-    osFrame << "<th>root</th>" << '\n';
-    osFrame << "<th>rootid</th>" << '\n';
-    osFrame << "<th>size</th>" << '\n';
-    osFrame << "<th>score</th>" << '\n';
-    osFrame << "<th>rawp</th>" << '\n';
-    osFrame << "<th>adjp</th>" << '\n';
-    osFrame << "</tr>" << '\n';
-    osFrame.precision(3);
-}
-
-void Experiment::endHTML(std::ostream& os) const {
-    os << "</table>" << '\n';
-    os << "</html>" << '\n';
-}
-void Experiment::addRow(std::ostream& os, int n, int nDOT, const std::string& root, const std::string& rootid, int size,
-                        double score, double rawp, double adjp) const {                 
-    os << "<tr>" << '\n';
-    if (nDOT < args.graphCount) {
-        std::string url = graphFilename(nDOT, args.draw ? "svg" : "txt");
-        os << "<td><a href=\"" << url << "\" target=\"frame2\">" << n << "</a></td>" << '\n';
-    }
-    else
-        os << "<td>" << n << "</td>" << '\n';
-    os << "<td>" << root << "</td>" << '\n';
-    os << "<td>" << rootid << "</td>" << '\n';
-    os << "<td>" << size << "</td>" << '\n';
-    os << "<td>" << score << "</td>" << '\n';
-    os << "<td>" << rawp << "</td>" << '\n';
-    os << "<td>" << adjp << "</td>" << '\n';
-    os << "</tr>" << '\n';
+    endHTMLFrame(osFrame);
+    writeHTML(path + "/" + htmlFilename, frameFilename, startingFrame);
 }
 
 } // namespace gxna

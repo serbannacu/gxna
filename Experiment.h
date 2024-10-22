@@ -61,11 +61,8 @@ private:
     void readExpression(const std::string& filename);
 
     // Output
-    std::string graphFilename(int, const std::string&) const;
+    void writeHTML(const std::string& htmlFilename, const std::string& frameFilename, const std::string& startingFrame) const;
     void printResults(const MultipleTest<Experiment>&);
-    void beginHTML(std::ostream& htmlStream, std::ostream& frameStream, const std::string& frameFilename) const;
-    void endHTML(std::ostream& os) const;
-    void addRow(std::ostream& os, int, int, const std::string&, const std::string&, int, double, double, double) const;
 
     struct TestData {
         int root;

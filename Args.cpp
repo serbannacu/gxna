@@ -44,9 +44,9 @@ Args::Args() :
     invariantPerms(false),
     shrink(false),
     seed(5),
-    graphCount(25),
+    nRows(250),
+    nDetailed(25),
     maxOverlap(0.75),
-    maxRows(250),
     draw(false)
 {}
 
@@ -129,9 +129,9 @@ void Args::print(std::ostream& os) const {
     os << "invariantPerms " << invariantPerms << '\n';
     os << "shrink " << shrink << '\n';
     os << "seed " << seed << '\n';
-    os << "graphCount " << graphCount << '\n';
+    os << "nRows " << nRows << '\n';
+    os << "nDetailed " << nDetailed << '\n';
     os << "maxOverlap " << maxOverlap << '\n';
-    os << "maxRows " << maxRows << '\n';
     os << "draw " << draw << '\n';
 }
 void from_string(std::string& lhs, const std::string& rhs) {
@@ -236,12 +236,12 @@ bool Args::setImpl(const std::string& key, const std::string& val) {
         from_string(shrink, val);
     else if (key == "seed")
         from_string(seed, val);
-    else if (key == "graphCount")
-        from_string(graphCount, val);
+    else if (key == "nRows")
+        from_string(nRows, val);
+    else if (key == "nDetailed")
+        from_string(nDetailed, val);
     else if (key == "maxOverlap")
         from_string(maxOverlap, val);
-    else if (key == "maxRows")
-        from_string(maxRows, val);
     else if (key == "draw")
         from_string(draw, val);
     else

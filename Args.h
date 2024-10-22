@@ -54,9 +54,9 @@ struct Args {
     int seed; // for random number generator
 
     // output
-    int graphCount; // max number of graphs to draw/write details
+    int nRows; // max number of graphs to display in html file
+    int nDetailed; // max number of graphs to write or draw details
     double maxOverlap;
-    int maxRows; // max number of graphs to display in html file
     bool draw; // use Graphviz to render graphs
 
 private:

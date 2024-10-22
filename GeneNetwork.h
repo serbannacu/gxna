@@ -5,9 +5,9 @@
 #include <vector>
 #include <unordered_map>
 
-// A gene network is an undirected graph where nodes represent genes and edges represent interactions
+// A gene network is an undirected (sparse) graph where nodes represent genes and edges represent interactions
 // Nodes are indexed by integers, and each node stores the list of its neighbors
-// Interaction type data is stored but only used for drawing the network
+// Interaction type data is stored as a string but only used for drawing the network
 
 namespace gxna {
 
