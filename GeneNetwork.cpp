@@ -184,7 +184,7 @@ void GeneNetwork::writeDOTEdge(std::ostream& os, int v, int w) const {
     if (it != m_edgeType.end()) {
         auto& type = it->second;
         os << v << " -> " << w;
-        if (type == "I") // undirected interaction
+        if (type == "I") // undirected interaction, no label
             os << " [arrowhead = \"none\" ]";
         else
             os << " [label = \"" << type << "\" ]";
@@ -192,6 +192,7 @@ void GeneNetwork::writeDOTEdge(std::ostream& os, int v, int w) const {
     }
 }
 
+// Only print edges where both endpoints are in the subgraph
 void GeneNetwork::writeDOT(const NodeList& subgraph, std::ostream& os) const {
     os << "digraph G {\n"; // print header
     os << "overlap = scale ;\n";
