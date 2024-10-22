@@ -17,7 +17,7 @@ double tstat(FastDataSet& ds0, FastDataSet& ds1) {
 }
 
 // T statistic between two data sets, equal variances assumed
-double tstateq(FastDataSet& ds0, FastDataSet& ds1) {
+double tstatEqual(FastDataSet& ds0, FastDataSet& ds1) {
     if (ds0.n < 1 || ds1.n < 1)
         return 0;
     else {

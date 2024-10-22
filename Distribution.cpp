@@ -160,9 +160,9 @@ double digamma(const double x) {
 
 double trigamma(const double x) {
     if (x < 20)
-        return trigamma(x + 1) + 1 / x / x;
+        return trigamma(x + 1) + 1 / (x * x);
     else if (x > 21)
-        return trigamma(x - 1) - 1 / (x - 1) / (x - 1);
+        return trigamma(x - 1) - 1 / ((x - 1) * (x - 1));
     else // interpolate
         return 0.05127082 * (21 - x) + 0.04877082 * (x - 20);
 }

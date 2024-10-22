@@ -7,9 +7,7 @@
 
 namespace gxna {
 
-// FastDataSet: very fast, very basic
-// Starts empty, grows by insertion; only tracks mean and variance
-// Note the var estimate is the MLE (biased)
+// FastDataSet: basic (only tracks mean and variance) but fast
 
 class FastDataSet {
 public:
@@ -20,7 +18,7 @@ public:
             insert(x);
     }
     
-    void insert(double x) {
+    void insert(double x) { // add data point
         sumx += x;
         sumxx += x * x;
         ++n;
@@ -30,7 +28,7 @@ public:
         return n > 0 ? sumx / n : 0;
     }
     
-    double var() const {
+    double var() const { // note the var estimate is the MLE (biased)
         if (n <= 1) return 0;
         double val = sumx / n;
         return sumxx / n - val * val;
@@ -53,7 +51,7 @@ public:
     }
 
     friend double tstat(FastDataSet&, FastDataSet&);
-    friend double tstateq(FastDataSet&, FastDataSet&);
+    friend double tstatEqual(FastDataSet&, FastDataSet&);
     friend double fstat(const double *x, const std::vector<int>& pheno, const int nPheno);
 
 private:
@@ -64,7 +62,7 @@ private:
 
 // T statistic between two data sets
 double tstat(FastDataSet&, FastDataSet&); // unequal variances
-double tstateq(FastDataSet&, FastDataSet&); // equal variances
+double tstatEqual(FastDataSet&, FastDataSet&); // equal variances
 
 // T statistic for a vector with associated phenotypes
 // phenotypes 0 and 1 define the two data sets, everything else is ignored
