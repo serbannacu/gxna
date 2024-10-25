@@ -37,7 +37,7 @@ struct GeneData {
 
     std::string id; // NCBI gene ID
     std::string name = "NA";
-    int nProbes = 0; // number of probes that map to this gene AND have expression data
+    size_t nProbes = 0; // number of probes that map to this gene AND have expression data
     std::vector<double> expression;
     double sd = 0; // standard deviation of expression
     double shrinkageFactor = 1.0; // used for moderated test statistics (empirical Bayes shrinkage)
@@ -66,7 +66,7 @@ private:
     void printResults(const MultipleTest<Experiment>&);
 
     struct TestData {
-        int root;
+        size_t root;
         GeneNetwork::NodeList cluster;
         double score = 0;
     };
@@ -74,12 +74,12 @@ private:
     Args& args; // program arguments
     std::vector<GeneData> m_gene; 
     std::unordered_map<std::string, std::string> m_probe2geneID;
-    std::unordered_map<std::string,int> m_geneID2index;
+    std::unordered_map<std::string, size_t> m_geneID2index;
     GeneNetwork m_geneNetwork; // gene interaction graph
     PhenotypeVector m_phenotype; // main phenotype
     PhenotypeVector m_phenotypeInvariant; // only used to generate invariant permutations
     std::vector<TestData> m_testData; // one for each root/hypothesis being tested
-    int m_permCount = 0;
+    size_t m_permCount = 0;
 };
 
 } // namespace gxna

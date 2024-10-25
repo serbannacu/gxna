@@ -77,7 +77,7 @@ public:
         }
 
         setRank(m_origT = v_score[0]);
-        for (int j = 1; j < v_score.size(); ++j)
+        for (size_t j = 1; j < v_score.size(); ++j)
             updateP(v_score[j]);
     }
 

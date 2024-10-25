@@ -33,11 +33,12 @@ struct Args {
     // algorithm filter and search
     std::vector<std::string> phenotypes; // only use these phenotypes
     AlgoType algoType;
-    int radius; // ball size for Basic algo, also used for filtering 
+    int radius; // ball size for Basic algo
     int depth; // subgraph size for GXNA algo
     bool flexSize;
     double minSD;
     int minDegree;
+    int minDistance;
 
     // algorithm subgraph score calculations
     bool sumScore;

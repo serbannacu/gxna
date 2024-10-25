@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -g -std=c++17 -Wall -MMD -O3
+CFLAGS = -g -std=c++17 -Wall -W -MMD -O3
 LDFLAGS = -g
 
 SOURCES = Args.cpp Distribution.cpp Statistics.cpp RandomPermutation.cpp GeneNetwork.cpp Experiment.cpp gxna.cpp

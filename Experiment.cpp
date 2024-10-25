@@ -102,19 +102,17 @@ Experiment::Experiment(Args& args_)
 
 void Experiment::run() {
     // select gene roots for multiple testing
-    // for AlgoType::GXNA potential roots will not be within args.radius of each other
+    // potential roots will not be within args.minDistance of each other
     std::vector<bool> ignore(m_gene.size());
-    for (int root = 0; root < m_geneNetwork.nNodes(); ++root)
-        if (m_geneNetwork.degree(root) >= args.minDegree && m_gene[root].sd >= args.minSD && !ignore[root]) {
-            auto ball = m_geneNetwork.ball(root, args.radius);
+    for (size_t root = 0; root < m_geneNetwork.nNodes(); ++root)
+        if (m_geneNetwork.degree(root) >= unsigned(args.minDegree) && m_gene[root].sd >= args.minSD && !ignore[root]) {
             TestData testData;
             testData.root = root;
-            if (args.algoType == AlgoType::Basic) {
-                testData.cluster = ball;
-            }
-            else { // AlgoType::GXNA
-                for (auto v : ball)
-                    ignore[v] = true; // do not use nearby genes as roots
+            if (args.algoType == AlgoType::Basic)
+                testData.cluster = m_geneNetwork.ball(root, args.radius);
+            if (args.minDistance > 0) { // do not use nearby genes as roots
+                for (auto v : m_geneNetwork.ball(root, args.minDistance))
+                    ignore[v] = true;
             }
             m_testData.emplace_back(testData);
         }
@@ -174,7 +172,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
         }
     }
     else { // AlgoType::GXNA
-        std::vector<int> cluster;
+        GeneNetwork::NodeList cluster;
         for (auto& testData : m_testData) {
             auto val = m_geneNetwork.findSubgraph(testData.root, args.depth, args.flexSize, cluster);
             clusterScorePermAbs.emplace_back(fabs(val));
@@ -207,7 +205,7 @@ double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes, const std::
     }
     else { // compute score(sum)
         std::vector<double> sum(m_phenotype.nSamples());
-        for (int gene : genes) {
+        for (auto gene : genes) {
             if (args.sumSigned && m_gene[gene].scorePerm < 0)
                 sum -= m_gene[gene].expression;
             else
@@ -286,7 +284,7 @@ void Experiment::readExpression(const std::string& filename) {
     if (!is)
         throw Exception("Could not open " + filename);
     std::string line;
-    int nProbesRead = 0, nGenesRead = 0;
+    size_t nProbesRead = 0, nGenesRead = 0;
     while (getline(is, line)) {
         std::istringstream ss(line);
         std::string probe;
@@ -294,7 +292,7 @@ void Experiment::readExpression(const std::string& filename) {
         auto it = m_probe2geneID.find(probe);
         if (ss && it != m_probe2geneID.end()) {
             std::vector<double> expression;
-            for (int i = 0; i < m_phenotype.nSamples(); i++) {
+            for (size_t i = 0; i < m_phenotype.nSamples(); i++) {
                 double val;
                 if (ss >> val)
                     expression.emplace_back(val);
@@ -324,7 +322,7 @@ void Experiment::readExpression(const std::string& filename) {
 // output functions
 
 void Experiment::writeHTML(const std::string& htmlFilename, const std::string& frameFilename, const std::string& startingFrame) const {
-    std::cerr << "Writing output to " << htmlFilename << '\n';
+    std::cerr << "Writing HTML to " << htmlFilename << '\n';
     std::ofstream os(htmlFilename.c_str());
     os << "<html>" << '\n';
     os << "<title>" << "GXNA " << args.name << ' ' << args.version << "</title>" << '\n';
@@ -360,7 +358,7 @@ void addCell(std::ostream& os, const T& val) {
     os << "<td>" << val << "</td>" << '\n';
 }
 
-static void addRow(std::ostream& os, const std::string& url, int n, const std::string& root, const std::string& rootid, int size,
+static void addRow(std::ostream& os, const std::string& url, size_t n, const std::string& root, const std::string& rootid, size_t size,
                    double score, double rawp, double adjp) {                 
     os << "<tr>" << '\n';
     if (url.size())
@@ -394,10 +392,10 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
     std::vector<bool> printed(m_gene.size());
     osResults << std::fixed << std::setprecision(3);
     int nDetailed = 0;
-    for (int i = 0; i < m_testData.size(); ++i) {
+    for (size_t i = 0; i < m_testData.size(); ++i) {
         auto& testData = m_testData[mt.getRank(i)];
         auto& rootData = m_gene[testData.root];
-        int size = testData.cluster.size();
+        auto size = testData.cluster.size();
         double score = testData.score, rawP = mt.getRawP(i), adjP = mt.getAdjP(i);
 
         osResults << std::setw(5) << i << ' ';
@@ -411,7 +409,7 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
         osResults << '\n';
 
         // now check overlap between current and previous clusters
-        int nPrinted = 0;
+        size_t nPrinted = 0;
         for (auto& v : testData.cluster)
             if (printed[v])
                 ++nPrinted;

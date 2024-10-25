@@ -36,6 +36,7 @@ Args::Args() :
     flexSize(false),
     minSD(0),
     minDegree(0),
+    minDistance(0),
     sumScore(true),
     sumSigned(true),
     scalingExponent(0.6),
@@ -51,16 +52,15 @@ Args::Args() :
 {}
 
 void Args::check() {
-    if (algoType == AlgoType::GXNA && minDegree == 0)
-        minDegree = 1;
-    if (radius > 0 && minDegree == 0)
+    // filter out genes without interactions, unless doing single gene analysis
+    if (minDegree == 0 and (algoType == AlgoType::GXNA || radius > 0))
         minDegree = 1;
 
     const char *msg = nullptr;
     if (!name.size())
         msg = "Empty name";
     else if (!probeFile.size())
-        msg = "Empty probeFile";
+        msg = "Must set probeFile";
     else if (!sumScore && algoType == AlgoType::GXNA)
         msg = "Need sumScore = true for algoType = GXNA";
     else if (!sumScore && shrink)
@@ -121,6 +121,7 @@ void Args::print(std::ostream& os) const {
     os << "flexSize " << flexSize << '\n';
     os << "minSD " << minSD << '\n';
     os << "minDegree " << minDegree << '\n';
+    os << "minDistance " << minDistance << '\n';
     os << "sumScore " << sumScore << '\n';
     os << "sumSigned " << sumSigned << '\n';
     os << "scalingExponent " << scalingExponent << '\n';
@@ -220,6 +221,8 @@ bool Args::setImpl(const std::string& key, const std::string& val) {
         from_string(minSD, val);
     else if (key == "minDegree")
         from_string(minDegree, val);
+    else if (key == "minDistance")
+        from_string(minDistance, val);
     else if (key == "sumScore")
         from_string(sumScore, val);
     else if (key == "sumSigned")

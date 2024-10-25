@@ -1,5 +1,6 @@
 #include "RandomPermutation.h"
 
+#include <cassert>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -12,7 +13,7 @@ inline int urand(int n) { // uniform random between 0 and n-1
 
 void Permutation::randomize(size_t start, size_t len) {
     auto p = &m_v[start];
-    for (int i = 1; i < len; ++i) {
+    for (size_t i = 1; i < len; ++i) {
         size_t j = urand(i+1); // uniform among 0, 1, ..., i
         auto temp = p[i];
         p[i] = p[j];
@@ -51,7 +52,7 @@ InvariantPermutationGenerator::InvariantPermutationGenerator(size_t n, size_t li
     : PermutationGenerator(n, limit)
 {
     assert(n == types.size());
-    int type;
+    int type = 0;
     for (auto val : types) {
         if (m_typeCount.empty() || type != val) {
             type = val;

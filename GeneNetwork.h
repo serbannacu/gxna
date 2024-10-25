@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -13,31 +14,31 @@ namespace gxna {
 
 class GeneNetwork {
 public:
-    typedef std::pair<int,int> Edge;
-    typedef std::vector<int> NodeList;
+    typedef std::pair<size_t, size_t> Edge;
+    typedef std::vector<size_t> NodeList;
 
-    void readInteractions(const std::string& filename, std::unordered_map<std::string, int>& gene2index);
+    void readInteractions(const std::string& filename, std::unordered_map<std::string, size_t>& gene2index);
 
-    void setSize(int n) {
+    void setSize(size_t n) {
         m_neighbors.resize(n);
     }
 
-    void setLabel(int n, const std::string& label) {
+    void setLabel(size_t n, const std::string& label) {
         if (n >= m_label.size())
             m_label.resize(n + 1);
         m_label[n] = label;
     }
     
-    int nNodes() const {
+    size_t nNodes() const {
         return m_neighbors.size();
     }
     
-    int degree(int node) const {
+    size_t degree(size_t node) const {
         return m_neighbors[node].size();
     }
 
-    // compute list of nodes at distance <= radius from center
-    NodeList ball(int center, int radius) const;
+    // compute list of nodes at distance <= radius from root
+    NodeList ball(size_t root, size_t radius) const;
 
     // set nodes scores: must be used before calling findSubgraph
     void setScores(const std::vector<double>& score, double scalingExponent);
@@ -45,7 +46,7 @@ public:
     double subgraphScore(const NodeList& subgraph) const;
     
     // find highest scoring subgraph for a given root, using greedy search
-    double findSubgraph(int root, int depth, bool flexSize, NodeList& result);
+    double findSubgraph(size_t root, size_t depth, bool flexSize, NodeList& result);
 
     // print all nodes and edges
     void print(std::ostream& os) const;
@@ -54,14 +55,14 @@ public:
     void write(const NodeList& subgraph, const std::string& filenameDOT, const std::string& filenameSVG = "") const;
 
 private:
-    void addEdge(int n1, int n2, const std::string& type);
+    void addEdge(size_t n1, size_t n2, const std::string& type);
 
     // compute (scaled) score of a subgraph, given the sum of the scores of its vertices and its size
-    double getScaledScore(double sumScore, int size) const {
-        return (sumScore - size * m_meanScore) / pow(size, m_scalingExponent);
+    double getScaledScore(double sumScore, size_t size) const {
+        return (sumScore - size * m_meanScore) / std::pow(size, m_scalingExponent);
     }
 
-    void writeDOTEdge(std::ostream& os, int v, int w) const;
+    void writeDOTEdge(std::ostream& os, size_t v, size_t w) const;
     void writeDOT(const NodeList& subgraph, std::ostream& os) const;
 
     // needed for unordered_map
@@ -78,7 +79,7 @@ private:
     std::vector<NodeList> m_neighbors; // for each vertex a list of neighbors
     std::vector<std::string> m_label; // (optional) node labels, used for output
     std::unordered_map<Edge, std::string, pair_hash> m_edgeType; // used for output
-    int m_nEdges = 0;
+    size_t m_nEdges = 0;
     
     std::vector<double> m_score; // a score for each node
     std::vector<bool> m_taken; // a flag for each node, true if node is in current subgraph
