@@ -65,7 +65,7 @@ GeneNetwork::NodeList GeneNetwork::ball(size_t root, size_t radius) const {
     NodeList boundary { root };
     std::unordered_set<size_t> ballSet { root };
 
-    for (size_t i = 1; i <= radius; ++i) {
+    for (size_t i = 1; i <= radius && boundary.size(); ++i) {
         NodeList newBoundary;
         for (auto v : boundary)
             for (auto w : m_neighbors[v])
