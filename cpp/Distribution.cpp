@@ -5,17 +5,22 @@
 
 namespace gxna {
 
-const double SQRT2PI = 2.5066282746;
-const double SQRT2 = 1.414214;
+constexpr double SQRT2 = 1.414214;
 
-// log gamma using the Lanczos approximation
-// must have x > 0
-
+// Log gamma using the Lanczos approximation
+// Must have x > 0
 static double logGamma(double x) {
-    const double c[8] = { 676.5203681218851, -1259.1392167224028,
-                          771.32342877765313, -176.61502916214059, 
-                          12.507343278686905, -0.13857109526572012, 
-                          9.9843695780195716e-6, 1.5056327351493116e-7 };
+    constexpr double SQRT2PI = 2.5066282746;
+    constexpr double c[8] = {
+        676.5203681218851,
+        -1259.1392167224028,
+        771.32342877765313,
+        -176.61502916214059,
+        12.507343278686905,
+        -0.13857109526572012,
+        9.9843695780195716e-6,
+        1.5056327351493116e-7
+    };
     double sum = 0.99999999999980993;
     double y = x;
     for (int j = 0; j < 8; j++)
@@ -23,18 +28,18 @@ static double logGamma(double x) {
     return log(SQRT2PI * sum / x) - (x + 7.5) + (x + 0.5) * log(x + 7.5);
 }
 
-// helper function for incomplete beta computes continued fraction
-// source: Numerical Recipes in C
-
-inline void checkZero(double& x) {
-    const double FPMIN = 1e-30;
+// Helper function for betaContFrac()
+inline void checkZero(double x) {
+    constexpr double FPMIN = 1e-30;
     if (fabs(x) < FPMIN)
         x = FPMIN;
 }
 
+// Helper function for incomplete beta, computes continued fraction
+// Source: Numerical Recipes in C
 static double betaContFrac(double a, double b, double x) {
-    const int MAXIT = 1000;
-    const double EPS = 3e-7;
+    constexpr int MAXIT = 1000;
+    constexpr double EPS = 3e-7;
     double qab = a + b;
     double qap = a + 1;
     double qam = a - 1;
@@ -68,57 +73,57 @@ static double betaContFrac(double a, double b, double x) {
     return h;
 }
 
-// incomplete beta function
-// must have 0 <= x <= 1
+// Incomplete beta function
+// Must have 0 <= x <= 1
 double betaInc(double a, double b, double x) {
     if (x == 0)
         return 0;
-    else if (x == 1)
+    if (x == 1)
         return 1;
-    else {
-        double logBeta = logGamma(a + b) - logGamma(a) - logGamma(b) + a * log(x) + b * log(1 - x);
-        if (x < (a + 1) / (a + b + 2))
-            return exp(logBeta) * betaContFrac(a, b, x) / a;
-        else
-            return 1 - exp(logBeta) * betaContFrac(b, a, 1 - x) / b;
-    }
+    double logBeta = logGamma(a + b) - logGamma(a) - logGamma(b)
+        + a * log(x) + b * log(1 - x);
+    if (x < (a + 1) / (a + b + 2))
+        return exp(logBeta) * betaContFrac(a, b, x) / a;
+    else
+        return 1 - exp(logBeta) * betaContFrac(b, a, 1 - x) / b;
 }
 
-// error integral using the Bagby approximation
-// max error has order 10^-5
-double normCDF(const double x) {
+// Error integral using the Bagby approximation
+// Max error has order 10^-5
+double normCDF(double x) {
+    constexpr double PI4 = 0.7853982;  // PI / 4
     double u = x * x;
     double z1 = exp(-u / 2);
-    double z2 = exp(-u * 0.5857864); // const is 2 - sqrt(2)
-    double s = 7 * z1 + 16 * z2 + (7 + 0.7853982 * u) * z1 * z1; // const is pi/4
-    double t = sqrt(1 - s/30) / 2;
+    double z2 = exp(-u * 0.5857864);  // const is 2 - sqrt(2)
+    double s = 7 * z1 + 16 * z2 + (7 + PI4 * u) * z1 * z1;
+    double t = 0.5 * sqrt(1 - s / 30);
     return x > 0 ? t + 0.5 : 0.5 - t;
 }
 
-// inverse error function
-// gives quantiles for gaussian: f(0)=-Inf, f(1/2)=0, f(1)=Inf
-// overflows within 10^-10 or so of 0 and 1
-// max error has order 10^-3
-double normCDFInv(const double x) {
-    const double a = 0.1400123;
-    const double b = 4.546885; // 2 / (pi * a)
+// Inverse error function
+// Computes quantiles for gaussian: f(0) = -Inf, f(1/2) = 0, f(1) = Inf
+// Overflows within 10^-10 or so of 0 and 1
+// Max error has order 10^-3
+double normCDFInv(double x) {
+    constexpr double a = 0.1400123;
+    constexpr double b = 4.546885;  // 2 / (PI * a)
     double ln = 0.5 * (log(4.0) + log(x) + log(1 - x));
-    double erfi = sqrt(-b - ln + sqrt((b + ln) * (b + ln) - 2 * ln /a));
+    double erfi = sqrt(-b - ln + sqrt((b + ln) * (b + ln) - 2 * ln / a));
     return x >= 0.5 ? erfi * SQRT2 : -erfi * SQRT2;
 }
 
-double tCDF(const double x, const double n) {
+double tCDF(double x, double n) {
     return 1 - 0.5 * betaInc(n / 2, 0.5, n / (n + x * x));
 }
 
-double fCDF(const double x, const double n1, const double n2) {
+double fCDF(double x, double n1, double n2) {
     return 1 - betaInc(n2 / 2, n1 / 2, n2 / (n2 + n1 * x));
 }
 
-// normal equivalent to f statistic, avoids overflow
-// returns y with P(|normal| < y) = P(F < x)
-// needs x >= 0
-double zfCDF(const double x, const double n1, const double n2) {
+// Normal equivalent to F statistic, avoids overflow
+// Returns y with P(|normal| < y) = P(F < x)
+// Needs x >= 0
+double zfCDF(double x, double n1, double n2) {
     double y = n2 / (n2 + n1 * x);
     double a = n2 / 2;
     double b = n1 / 2;
@@ -128,49 +133,52 @@ double zfCDF(const double x, const double n1, const double n2) {
         logBInc = log(bInc);
     }
     else {
-        double logBeta = logGamma(a + b) - logGamma(a) - logGamma(b) + a * log(y) + b * log(1 - y);
+        double logBeta = logGamma(a + b) - logGamma(a) - logGamma(b)
+            + a * log(y) + b * log(1 - y);
         logBInc = logBeta + log(betaContFrac(a, b, y)) - log(a);
         bInc = exp(logBInc);
     }
+
     const double A = 0.1400123;
-    const double B = 4.546885; // 2 / (pi * A)
+    const double B = 4.546885;  // 2 / (pi * A)
     double ln = 0.5 * (logBInc + log(2 - bInc));
     double erfi = sqrt(-B - ln + sqrt((B + ln) * (B + ln) - 2 * ln/A));
     return erfi * SQRT2;
 }
 
-// normal equivalent to t statistic, avoids overflow
-// returns y with P(|normal| < y) = P(T < x)
-// needs x >= 0
-double ztCDF(const double x, const double n) {
+// Normal equivalent to T statistic, avoids overflow
+// Returns y with P(|normal| < y) = P(T < x)
+// Needs x >= 0
+double ztCDF(double x, double n) {
     return x >= 0 ? zfCDF(x * x, 1, n) : -zfCDF(x * x, 1, n);
 }
 
-// digamma and trigamma have slow and approximate but easy implementations
-// they only work for x > 0 and y > 0
+// Digamma and trigamma functions
+// Slow and approximate but easy implementations
+// Need x > 0
 
-double digamma(const double x) {
+double digamma(double x) {
     if (x < 20)
         return digamma(x + 1) - 1 / x;
     else if (x > 21)
         return digamma(x - 1) + 1 / (x-1);
-    else // interpolate
+    else  // interpolate
         return 2.970524 * (21 - x) + 3.020524 * (x - 20);
 }
 
-double trigamma(const double x) {
+double trigamma(double x) {
     if (x < 20)
         return trigamma(x + 1) + 1 / (x * x);
     else if (x > 21)
         return trigamma(x - 1) - 1 / ((x - 1) * (x - 1));
-    else // interpolate
+    else  // interpolate
         return 0.05127082 * (21 - x) + 0.04877082 * (x - 20);
 }
 
-double trigammainv(const double y) {  // error up to 0.25
-    double x1 = 1 / y + 0.5;
-    double x2 = 1 / (y + 1 / x1) - 0.5;
+double trigammainv(double x) {  // error up to 0.25
+    double x1 = 1 / x + 0.5;
+    double x2 = 1 / (x + 1 / x1) - 0.5;
     return (x1 + x2) / 2;
 }
 
-} // namespace gxna
+}  // namespace gxna

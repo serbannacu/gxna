@@ -10,20 +10,20 @@
 namespace gxna {
 
 // Normal distribution
-double normCDF(const double x);
-double normCDFInv(const double x);
+double normCDF(double x);
+double normCDFInv(double x);
 
 // t distribution
-double tCDF(const double x, const double n);
-double ztCDF(const double x, const double n);
+double tCDF(double x, double n);
+double ztCDF(double x, double n);
 
 // F distribution
-double fCDF(const double x, const double n1, const double n2);
-double zfCDF(const double x, const double n1, const double n2);
+double fCDF(double x, double n1, double n2);
+double zfCDF(double x, double n1, double n2);
 
 // Special functions used in empirical Bayes calculations
-double digamma(const double x);
-double trigamma(const double x);
-double trigammainv(const double y);
+double digamma(double x);
+double trigamma(double x);
+double trigammainv(double x);
 
-} // namespace gxna
+}  // namespace gxna
