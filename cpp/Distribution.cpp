@@ -1,115 +1,96 @@
 #include "Distribution.h"
 
 #include <cmath>
-#include <iostream>
 
 namespace gxna {
 
-constexpr double SQRT2 = 1.414214;
+// Helpers for incomplete beta function calculation
+// Use the Lentz algorithm to compute continuous fraction
 
-// Log gamma using the Lanczos approximation
-// Must have x > 0
-static double logGamma(double x) {
-    constexpr double SQRT2PI = 2.5066282746;
-    constexpr double c[8] = {
-        676.5203681218851,
-        -1259.1392167224028,
-        771.32342877765313,
-        -176.61502916214059,
-        12.507343278686905,
-        -0.13857109526572012,
-        9.9843695780195716e-6,
-        1.5056327351493116e-7
-    };
-    double sum = 0.99999999999980993;
-    double y = x;
-    for (int j = 0; j < 8; j++)
-        sum += c[j] / ++y;
-    return log(SQRT2PI * sum / x) - (x + 7.5) + (x + 0.5) * log(x + 7.5);
-}
-
-// Helper function for betaContFrac()
+// Avoid division by zero
 inline void checkZero(double x) {
-    constexpr double FPMIN = 1e-30;
-    if (fabs(x) < FPMIN)
-        x = FPMIN;
+    constexpr double Epsilon = 1e-30;
+    if (std::fabs(x) < Epsilon)
+        x = Epsilon;
 }
 
-// Helper function for incomplete beta, computes continued fraction
-// Source: Numerical Recipes in C
-static double betaContFrac(double a, double b, double x) {
-    constexpr int MAXIT = 1000;
-    constexpr double EPS = 3e-7;
-    double qab = a + b;
-    double qap = a + 1;
-    double qam = a - 1;
-    double c = 1;
-    double d = 1 - qab * x / qap;
+// Iterative updates of the C and D continuous fraction coefficients
+inline void updateD(double& d, double coeff) {
+    d = 1 + coeff * d;
     checkZero(d);
     d = 1 / d;
-    double h = d;
-    int m;
-    for (m = 1; m <= MAXIT; m++) {
-        int m2 = 2 * m;
-        double aa = m * (b-m) * x / ((qam + m2) * (a + m2));
-        d = 1 + aa * d;
-        checkZero(d);
-        c = 1 + aa / c;
-        checkZero(c);
-        d = 1 / d;
-        h *= (d * c);
-        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
-        d = 1 + aa * d;
-        checkZero(d);
-        c = 1 + aa / c;
-        checkZero(c);
-        d = 1 / d;
-        double del = d * c;
-        h *= del;
-        if (fabs(del - 1) < EPS) break;
+}
+
+inline double updateCD(double& frac, double& c, double& d, double coeff) {
+    c = 1 + coeff / c;
+    checkZero(c);
+    updateD(d, coeff);
+    double prod = c * d;
+    frac *= prod;
+    return prod;
+}
+
+// Compute continuous fraction
+static double betaLentz(double a, double b, double x) {
+    constexpr int MaxIterations = 500;
+    constexpr double MaxError = 1e-8;
+    double sum = a + b;
+    double q = a;
+    double c = 1;
+    double d = 1;
+    updateD(d, -sum / (a + 1) * x);
+    double frac = d;
+    for (int m = 1; m <= MaxIterations; ++m) {
+        double coeff;
+        q += 2;
+        coeff = m * (--b) / ((q - 1) * q);
+        updateCD(frac, c, d, coeff * x);
+        coeff = (++a) * (++sum) / (q * (q + 1));
+        double val = updateCD(frac, c, d, -coeff * x) - 1;
+        if (std::fabs(val) < MaxError)
+            break;
     }
-    if (m > MAXIT)
-        std::cerr << "betaContFrac: too many iterations\n";
-    return h;
+    return frac;
 }
 
 // Incomplete beta function
-// Must have 0 <= x <= 1
-double betaInc(double a, double b, double x) {
+// Needs 0 < a, 0 < b, 0 <= x <= 1
+static double betaInc(double a, double b, double x) {
     if (x == 0)
         return 0;
     if (x == 1)
         return 1;
-    double logBeta = logGamma(a + b) - logGamma(a) - logGamma(b)
-        + a * log(x) + b * log(1 - x);
-    if (x < (a + 1) / (a + b + 2))
-        return exp(logBeta) * betaContFrac(a, b, x) / a;
+    double logval = std::lgamma(a + b) - std::lgamma(a) - std::lgamma(b)
+        + a * std::log(x) + b * std::log(1 - x);
+    double val = std::exp(logval);
+    if (x < (a + 1) / (a + b + 2))  // continuous fraction converges fast
+        return val * betaLentz(a, b, x) / a;
     else
-        return 1 - exp(logBeta) * betaContFrac(b, a, 1 - x) / b;
-}
-
-// Error integral using the Bagby approximation
-// Max error has order 10^-5
-double normCDF(double x) {
-    constexpr double PI4 = 0.7853982;  // PI / 4
-    double u = x * x;
-    double z1 = exp(-u / 2);
-    double z2 = exp(-u * 0.5857864);  // const is 2 - sqrt(2)
-    double s = 7 * z1 + 16 * z2 + (7 + PI4 * u) * z1 * z1;
-    double t = 0.5 * sqrt(1 - s / 30);
-    return x > 0 ? t + 0.5 : 0.5 - t;
+        return 1 - val * betaLentz(b, a, 1 - x) / b;
 }
 
 // Inverse error function
-// Computes quantiles for gaussian: f(0) = -Inf, f(1/2) = 0, f(1) = Inf
 // Overflows within 10^-10 or so of 0 and 1
 // Max error has order 10^-3
+double erfinv(double x) {
+    constexpr double A = 7.1422296;
+    constexpr double B = 4.546885;  // 2 * A / PI
+    double p = std::log(4.0 * x * (1-x));
+    double q = 0.5 * p + B;
+    return std::sqrt(std::sqrt(q * q - p * A) - q);
+}
+
+constexpr double SQRT2 = 1.414214;
+
+double normCDF(double x) {
+    constexpr double SQRT2INV = 0.7071067811865475;
+    return 1 - 0.5 * std::erfc(x * SQRT2INV);
+}
+
+// Computes quantiles for gaussian: f(0) = -Inf, f(1/2) = 0, f(1) = Inf
 double normCDFInv(double x) {
-    constexpr double a = 0.1400123;
-    constexpr double b = 4.546885;  // 2 / (PI * a)
-    double ln = 0.5 * (log(4.0) + log(x) + log(1 - x));
-    double erfi = sqrt(-b - ln + sqrt((b + ln) * (b + ln) - 2 * ln / a));
-    return x >= 0.5 ? erfi * SQRT2 : -erfi * SQRT2;
+    double val = SQRT2 * erfinv(x);
+    return x >= 0.5 ? val : -val;
 }
 
 double tCDF(double x, double n) {
@@ -125,25 +106,8 @@ double fCDF(double x, double n1, double n2) {
 // Needs x >= 0
 double zfCDF(double x, double n1, double n2) {
     double y = n2 / (n2 + n1 * x);
-    double a = n2 / 2;
-    double b = n1 / 2;
-    double bInc, logBInc;
-    if (y >= (a + 1) / (a + b + 2)) {
-        bInc = betaInc(a, b, y);
-        logBInc = log(bInc);
-    }
-    else {
-        double logBeta = logGamma(a + b) - logGamma(a) - logGamma(b)
-            + a * log(y) + b * log(1 - y);
-        logBInc = logBeta + log(betaContFrac(a, b, y)) - log(a);
-        bInc = exp(logBInc);
-    }
-
-    const double A = 0.1400123;
-    const double B = 4.546885;  // 2 / (pi * A)
-    double ln = 0.5 * (logBInc + log(2 - bInc));
-    double erfi = sqrt(-B - ln + sqrt((B + ln) * (B + ln) - 2 * ln/A));
-    return erfi * SQRT2;
+    double bInc = betaInc(n2 / 2, n1 / 2, y);
+    return SQRT2 * erfinv(bInc / 2);
 }
 
 // Normal equivalent to T statistic, avoids overflow
@@ -151,34 +115,6 @@ double zfCDF(double x, double n1, double n2) {
 // Needs x >= 0
 double ztCDF(double x, double n) {
     return x >= 0 ? zfCDF(x * x, 1, n) : -zfCDF(x * x, 1, n);
-}
-
-// Digamma and trigamma functions
-// Slow and approximate but easy implementations
-// Need x > 0
-
-double digamma(double x) {
-    if (x < 20)
-        return digamma(x + 1) - 1 / x;
-    else if (x > 21)
-        return digamma(x - 1) + 1 / (x-1);
-    else  // interpolate
-        return 2.970524 * (21 - x) + 3.020524 * (x - 20);
-}
-
-double trigamma(double x) {
-    if (x < 20)
-        return trigamma(x + 1) + 1 / (x * x);
-    else if (x > 21)
-        return trigamma(x - 1) - 1 / ((x - 1) * (x - 1));
-    else  // interpolate
-        return 0.05127082 * (21 - x) + 0.04877082 * (x - 20);
-}
-
-double trigammainv(double x) {  // error up to 0.25
-    double x1 = 1 / x + 0.5;
-    double x2 = 1 / (x + 1 / x1) - 0.5;
-    return (x1 + x2) / 2;
 }
 
 }  // namespace gxna

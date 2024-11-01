@@ -3,8 +3,7 @@
 
 namespace gxna {
 
-// T statistic between two data sets, different variances assumed
-double tstat(FastDataSet& ds0, FastDataSet& ds1) {
+double tstat(const FastDataSet& ds0, const FastDataSet& ds1) {
     if (ds0.n < 2 || ds1.n < 2)
         return 0;
     else {
@@ -16,8 +15,7 @@ double tstat(FastDataSet& ds0, FastDataSet& ds1) {
     }
 }
 
-// T statistic between two data sets, equal variances assumed
-double tstatEqual(FastDataSet& ds0, FastDataSet& ds1) {
+double tstatEqual(const FastDataSet& ds0, const FastDataSet& ds1) {
     if (ds0.n < 1 || ds1.n < 1)
         return 0;
     else {
@@ -43,7 +41,7 @@ double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, in
 }
 
 double fstat(const double *x, const std::vector<int>& pheno, const int nPheno) {
-    std::vector<FastDataSet> v_data(nPheno); // stores stats for each phenotype
+    std::vector<FastDataSet> v_data(nPheno);  // stores stats for each phenotype
     for (auto p : pheno)
         v_data[p].insert(*x++);
     double sum = 0, sumsq = 0, sumrss = 0;
@@ -58,7 +56,41 @@ double fstat(const double *x, const std::vector<int>& pheno, const int nPheno) {
     if (sumrss > 0 && nPheno > 1)
         return rssdiff / (nPheno - 1) / sumrss * (pheno.size() - nPheno);
     else
-        return 0; // not quite correct, but will prevent overflow
+        return 0;  // not quite correct, but will prevent overflow
+}
+
+// Special functions used in empirical Bayes calculations
+// The implementations below are approximate but good enough for our use case
+// All expect x > 0
+
+static double digamma(double x) {
+    double sum = 0;
+    while (x < 20)
+        sum -= 1 / x++;
+    while (x > 21)
+        sum += 1 / --x;
+    double val = 2.970524 * (21 - x) + 3.020524 * (x - 20);  // interpolate
+    return sum + val;
+}
+
+static double trigamma(double x) {
+    double sum = 0;
+    while (x < 20) {
+        sum += 1 / (x * x);
+        ++x;
+    }
+    while (x > 21) {
+        --x;
+        sum -= 1 / (x * x);
+    }
+    double val = 0.05127082 * (21 - x) + 0.04877082 * (x - 20);  // interpolate
+    return sum + val;
+}
+
+static double trigammainv(double x) {  // error up to 0.25
+    double x1 = 1 / x + 0.5;
+    double x2 = 1 / (x + 1 / x1) - 0.5;
+    return (x1 + x2) / 2;
 }
 
 void EmpiricalBayes::estimate(double logVarMean, double logVarVar, int nGenes, int df) {
@@ -68,18 +100,22 @@ void EmpiricalBayes::estimate(double logVarMean, double logVarVar, int nGenes, i
     double val = logVarMean - digamma(df / 2);
     if (y > 0) {
         m_df = 2 * trigammainv(y);
-        m_var = exp(val + digamma(m_df / 2) + log(df / m_df));
+        m_var = std::exp(val + digamma(m_df / 2) + log(df / m_df));
     }
     else {
-        m_df = 100 * df; // just need something large
-        m_var = exp(val + log(df / 2));
+        m_df = 100 * df;  // just need something large
+        m_var = std::exp(val + log(df / 2));
     }
     m_ratio = m_df / df;
 }
 
 double EmpiricalBayes::shrinkageFactor(double geneVar) const {
-    double val = geneVar > 0 ? (1 + m_ratio) / (1 + m_ratio * m_var / geneVar) : 1.0;
-    return sqrt(val);
+    if (geneVar > 0) {
+        double val = (1 + m_ratio) / (1 + m_ratio * m_var / geneVar);
+        return std::sqrt(val);
+    }
+    else
+        return 1.0;
 }
 
-} // namespace gxna
+}  // namespace gxna
