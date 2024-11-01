@@ -6,26 +6,24 @@ namespace gxna {
 double tstat(const FastDataSet& ds0, const FastDataSet& ds1) {
     if (ds0.n < 2 || ds1.n < 2)
         return 0;
-    else {
-        double mu0 = ds0.sumx / ds0.n;
-        double mu1 = ds1.sumx / ds1.n;
-        double vardiff = (ds1.sumxx / ds1.n - mu1 * mu1) / ds1.n
-            + (ds0.sumxx / ds0.n - mu0 * mu0) / ds0.n;
-        return vardiff > 0 ? (mu1 - mu0) / sqrt(vardiff) : 0;
-    }
+
+    double mu0 = ds0.sumx / ds0.n;
+    double mu1 = ds1.sumx / ds1.n;
+    double vardiff = (ds1.sumxx / ds1.n - mu1 * mu1) / ds1.n
+        + (ds0.sumxx / ds0.n - mu0 * mu0) / ds0.n;
+    return vardiff > 0 ? (mu1 - mu0) / sqrt(vardiff) : 0;
 }
 
 double tstatEqual(const FastDataSet& ds0, const FastDataSet& ds1) {
     if (ds0.n < 1 || ds1.n < 1)
         return 0;
-    else {
-        double mu0 = ds0.sumx / ds0.n;
-        double mu1 = ds1.sumx / ds1.n;
-        int n = ds0.n + ds1.n;
-        double mu = (ds0.sumx + ds1.sumx) / n;
-        double var = ((ds0.sumxx + ds1.sumxx) / n - mu * mu) / n;
-        return var > 0 ? (mu1 - mu0) / sqrt(var) : 0;
-    }
+
+    double mu0 = ds0.sumx / ds0.n;
+    double mu1 = ds1.sumx / ds1.n;
+    int n = ds0.n + ds1.n;
+    double mu = (ds0.sumx + ds1.sumx) / n;
+    double var = ((ds0.sumxx + ds1.sumxx) / n - mu * mu) / n;
+    return var > 0 ? (mu1 - mu0) / sqrt(var) : 0;
 }
 
 double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, int pheno1) {
@@ -60,17 +58,37 @@ double fstat(const double *x, const std::vector<int>& pheno, const int nPheno) {
 }
 
 // Special functions used in empirical Bayes calculations
-// The implementations below are approximate but good enough for our use case
 // All expect x > 0
+
+// Approximate sum(1 / k) from 1 to n
+[[maybe_unused]]
+static double harmonic(int n) {
+    constexpr double Gamma = 0.577215664901532;  // Euler's constant
+    double inv = 1.0 / n;
+    double inv2 = inv * inv;
+    double inv4 = inv2 * inv2;
+    return std::log(n) + Gamma + 0.5 * inv - inv2 / 12 + inv4 / 120;
+}
+
+// Approximate sum(1 / k^2) from 1 to n
+[[maybe_unused]]
+static double harmonic2(int n) {
+    constexpr double Zeta2 = 1.644934066848226;  // PI ^ 2 / 6
+    double inv = 1.0 / n;
+    double inv2 = inv * inv;
+    double inv3 = inv2 * inv;
+    return Zeta2 - inv + 0.5 * inv2 - inv3 / 6;
+}
 
 static double digamma(double x) {
     double sum = 0;
     while (x < 20)
-        sum -= 1 / x++;
-    while (x > 21)
-        sum += 1 / --x;
-    double val = 2.970524 * (21 - x) + 3.020524 * (x - 20);  // interpolate
-    return sum + val;
+        sum += 1 / x++;
+    double inv = 1.0 / x;
+    double inv2 = inv * inv;
+    double inv4 = inv2 * inv2;
+    double val = std::log(x) - 0.5 * inv - inv2 / 12 + inv4 / 120;
+    return val - sum;
 }
 
 static double trigamma(double x) {
@@ -79,15 +97,16 @@ static double trigamma(double x) {
         sum += 1 / (x * x);
         ++x;
     }
-    while (x > 21) {
-        --x;
-        sum -= 1 / (x * x);
-    }
-    double val = 0.05127082 * (21 - x) + 0.04877082 * (x - 20);  // interpolate
-    return sum + val;
+    double inv = 1.0 / x;
+    double inv2 = inv * inv;
+    double inv4 = inv2 * inv2;
+    double val = inv * (1 + 0.5 * inv + inv2 / 6 - inv4 / 30);
+    return val + sum;
 }
 
-static double trigammainv(double x) {  // error up to 0.25
+// This implementation has error up to 0.25
+// OK for EmpiricalBayes::estimate but can do better
+static double trigammainv(double x) {
     double x1 = 1 / x + 0.5;
     double x2 = 1 / (x + 1 / x1) - 0.5;
     return (x1 + x2) / 2;
