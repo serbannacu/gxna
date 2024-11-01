@@ -6,9 +6,10 @@
 #include <vector>
 #include <unordered_map>
 
-// A gene network is an undirected (sparse) graph where nodes represent genes and edges represent interactions
-// Nodes are indexed by integers, and each node stores the list of its neighbors
-// Interaction type data is stored as a string but only used for drawing the network
+// A gene network is an undirected (sparse) graph where
+// nodes represent genes and edges represent interactions.
+// Nodes are indexed by integers, and each node stores the list of its neighbors.
+// Interaction type data is stored as a string but only used for drawing the network.
 
 namespace gxna {
 
@@ -17,7 +18,8 @@ public:
     typedef std::pair<size_t, size_t> Edge;
     typedef std::vector<size_t> NodeList;
 
-    void readInteractions(const std::string& filename, std::unordered_map<std::string, size_t>& gene2index);
+    void readInteractions(const std::string& filename,
+                          std::unordered_map<std::string, size_t>& gene2index);
 
     void setSize(size_t n) {
         m_neighbors.resize(n);
@@ -52,12 +54,13 @@ public:
     void print(std::ostream& os) const;
     
     // write subgraph into a Graphviz DOT file, and optionally render it into SVG file
-    void write(const NodeList& subgraph, const std::string& filenameDOT, const std::string& filenameSVG = "") const;
+    void write(const NodeList& subgraph, const std::string& filenameDOT,
+               const std::string& filenameSVG = "") const;
 
 private:
     void addEdge(size_t n1, size_t n2, const std::string& type);
 
-    // compute (scaled) score of a subgraph, given the sum of the scores of its vertices and its size
+    // compute scaled score of a subgraph, given the sum of its node scores and its size
     double getScaledScore(double sumScore, size_t size) const {
         return (sumScore - size * m_meanScore) / std::pow(size, m_scalingExponent);
     }

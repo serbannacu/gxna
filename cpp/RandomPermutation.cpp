@@ -14,7 +14,7 @@ inline int urand(int n) { // uniform random between 0 and n-1
 void Permutation::randomize(size_t start, size_t len) {
     auto p = &m_v[start];
     for (size_t i = 1; i < len; ++i) {
-        size_t j = urand(i+1); // uniform among 0, 1, ..., i
+        size_t j = urand(i+1);  // uniform among 0, 1, ..., i
         auto temp = p[i];
         p[i] = p[j];
         p[j] = temp;
@@ -33,7 +33,7 @@ void PermutationHistogram::print(std::ostream& os, int prec) const {
 bool PermutationGenerator::next() {
     if (m_count >= m_limit)
         return false;
-    if (m_count++) // first next() call does not call update(), leaves Id permutation in place
+    if (m_count++)  // first next() call leaves Id permutation in place
         update();
     if (m_verbose)
         showProgress();
@@ -44,13 +44,13 @@ void PermutationGenerator::showProgress() {
     int val = 100 * m_count / m_limit;
     if (m_percentage != val) {
         m_percentage = val;
-        std::cerr << "Permutation " << m_count << '/' << m_limit << ' ' << val << '%' << (m_count == m_limit ? '\n' : '\r');
+        std::cerr << "Permutation " << m_count << '/' << m_limit << ' '
+                  << val << '%' << (m_count == m_limit ? '\n' : '\r');
     }
 }
 
-InvariantPermutationGenerator::InvariantPermutationGenerator(size_t n, size_t limit, const std::vector<int>& types)
-    : PermutationGenerator(n, limit)
-{
+InvariantPermutation::InvariantPermutation(size_t n, size_t limit, const std::vector<int>& types)
+    : PermutationGenerator(n, limit) {
     assert(n == types.size());
     int type = 0;
     for (auto val : types) {
@@ -62,7 +62,7 @@ InvariantPermutationGenerator::InvariantPermutationGenerator(size_t n, size_t li
     }
 }
 
-void InvariantPermutationGenerator::update() {
+void InvariantPermutation::update() {
     size_t sum = 0;
     for (auto val : m_typeCount) {
         m_perm.randomize(sum, val);
@@ -70,4 +70,4 @@ void InvariantPermutationGenerator::update() {
     }
 }
 
-} // namespace gxna
+}  // namespace gxna

@@ -10,11 +10,13 @@
 
 namespace gxna {
 
-// Class for testing multiple hypotheses
-// It computes raw and adjusted P-values using resampling (permutation tests)
-// The method ScoreCalculator::operator() is called for every new permutation and must return a vector of scores
-// For two-sided testing (typical), scores should be postive (e.g. the absolute value of the T statistic)
-// The first permutation generated MUST be id
+// Class for testing multiple hypotheses.
+// It computes raw and adjusted P-values using resampling (permutation tests).
+// The method ScoreCalculator::operator() is called for every new permutation
+// and must return a vector of scores.
+// Scores should be positive, so take the absolute value if using two-sided
+// statistics such as T.
+// The first permutation generated MUST be id.
 
 template<class ScoreCalculator>
 class MultipleTest {
@@ -86,7 +88,8 @@ private:
         m_rank.resize(m_nObjects);
         for (int i = 0; i < m_nObjects; i++)
             m_rank[i] = i;
-        std::sort(m_rank.begin(), m_rank.end(), [&](int j, int k) { return score[j] > score[k]; });
+        std::sort(m_rank.begin(), m_rank.end(),
+                  [&](int j, int k) { return score[j] > score[k]; });
     }
 
     void updateP(const std::vector<double>& score) {

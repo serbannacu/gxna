@@ -37,7 +37,7 @@ struct GeneData {
 
     std::string id; // NCBI gene ID
     std::string name = "NA";
-    size_t nProbes = 0; // number of probes that map to this gene AND have expression data
+    size_t nProbes = 0; // probes that map to this gene AND have expression data
     std::vector<double> expression;
     double sd = 0; // standard deviation of expression
     double shrinkageFactor = 1.0; // used for moderated test statistics (empirical Bayes shrinkage)
@@ -62,7 +62,8 @@ private:
     void readExpression(const std::string& filename);
 
     // Output
-    void writeHTML(const std::string& htmlFilename, const std::string& frameFilename, const std::string& startingFrame) const;
+    void writeHTML(const std::string& htmlFilename, const std::string& frameFilename,
+                   const std::string& startingFrame) const;
     void printResults(const MultipleTest<Experiment>&);
 
     struct TestData {

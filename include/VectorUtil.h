@@ -4,7 +4,8 @@
 
 namespace gxna {
 
-// Basic vector arithmetic: not optimized, but good enough for our purposes, and avoids using third-party libraries
+// Basic vector arithmetic
+// Not optimized, but good enough for our purposes, and avoids using third-party libraries
 // No size checks
 
 template<class T>
@@ -46,4 +47,4 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
     return os;
 }
 
-} // namespace gxna
+}  // namespace gxna

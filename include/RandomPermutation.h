@@ -1,5 +1,3 @@
-// Random permutation generators
-
 #pragma once
 
 #include <iosfwd>
@@ -7,12 +5,11 @@
 
 namespace gxna {
 
-// permutation of the integers {0, 1, 2, ..., n - 1}
+// Permutation of the integers {0, 1, 2, ..., n - 1}
 class Permutation {
 public:
     Permutation(size_t n)
-        : m_v(n)
-    {
+        : m_v(n) {
         init();
     }
 
@@ -28,13 +25,15 @@ public:
         return w;
     }
 
-    void init() { // to Id permutation
+    // Initialize to Id permutation
+    void init() {
         for (size_t i = 0; i < m_v.size(); ++i)
             m_v[i] = i;
     }
-    
-    void randomize(size_t start, size_t len); // uniform random scramble obtained via element swaps
-    
+
+    // Uniform random scramble obtained via element swaps
+    void randomize(size_t start, size_t len);
+
     void randomize() {
         randomize(0, m_v.size());
     }
@@ -60,15 +59,16 @@ public:
     }
 
     void print(std::ostream& os, int prec = 4) const;
-    
+
 private:
     std::vector< std::vector<int> > m_count;
     size_t m_n;
     size_t m_n_add;
 };
 
-// PermutationGenerator yields a sequence of permutations of the integers {0, 1, 2, ..., n - 1}
-// The first permutation returned is guaranteed to be Id
+// PermutationGenerator yields a sequence of permutations
+// of the integers {0, 1, 2, ..., n - 1}.
+// The first permutation returned is guaranteed to be Id.
 
 class PermutationGenerator {
 public:
@@ -81,7 +81,7 @@ public:
     {}
 
     virtual ~PermutationGenerator() = default;
-    
+
     void setVerbose(bool verbose = true) {
         m_verbose = verbose;
     }
@@ -89,50 +89,52 @@ public:
     size_t count() const {
         return m_count;
     }
-    
+
     const Permutation& get() const {
         return m_perm;
     }
-    
+
     bool next();
 
 protected:
     Permutation m_perm;
 
 private:
-    virtual void update() = 0; // generate next permutation, store in m_perm
+    virtual void update() = 0;  // generate next permutation, store in m_perm
     void showProgress();
 
-    size_t m_count; // number of permutations already generated
-    size_t m_limit; // total number of permutations to generate
-    int m_percentage; // used to show progress
+    size_t m_count;  // number of permutations already generated
+    size_t m_limit;  // total number of permutations to generate
+    int m_percentage;  // used to show progress
     bool m_verbose;
 };
 
 // Uniform random permutation
 
-class UniformPermutationGenerator : public PermutationGenerator {
+class UniformPermutation : public PermutationGenerator {
 public:
-    UniformPermutationGenerator(size_t n, size_t limit)
+    UniformPermutation(size_t n, size_t limit)
         : PermutationGenerator(n, limit)
     {}
-    
+
 private:
     virtual void update() {
         m_perm.randomize();
     }
 };
 
-// InvariantPermutationGenerator yields a sequence of uniform INVARIANT random permutations
-// Each element in {0, 1, 2, ..., n - 1} has an assigned type
-// Invariance means all permutations $p$ preserve type, so $p(i)$ has the same type as $i$ for all $i$
-// Thus each permutation generated induces an uniform random permutation within each type
+// InvariantPermutation yields a sequence of uniform INVARIANT random permutations.
+// Each element in {0, 1, 2, ..., n - 1} has an assigned type.
+// Invariance means all permutations $p$ preserve type,
+// so $p(i)$ has the same type as $i$ for all $i$.
+// Thus each permutation generated induces an uniform random permutation within each type.
 
-// The ctor expectes a vector of types in sequential order, so {0, 0, 1, 1, 1} is OK but {0, 1, 0, 1, 1} is not
+// The ctor expectes a vector of types in sequential order,
+// so {0, 0, 1, 1, 1} is OK but {0, 1, 0, 1, 1} is not.
 
-class InvariantPermutationGenerator : public PermutationGenerator {
+class InvariantPermutation : public PermutationGenerator {
 public:
-    InvariantPermutationGenerator(size_t n, size_t limit, const std::vector<int>& types);
+    InvariantPermutation(size_t n, size_t limit, const std::vector<int>& types);
 
 private:
     virtual void update();
@@ -140,4 +142,4 @@ private:
     std::vector<int> m_typeCount;
 };
 
-} // namespace gxna
+}  // namespace gxna

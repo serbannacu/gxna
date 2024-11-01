@@ -121,9 +121,9 @@ void Experiment::run() {
     MultipleTest<Experiment> mt(*this, m_testData.size());
     PermutationGenerator *pg;
     if (args.invariantPerms)
-        pg = new InvariantPermutationGenerator(m_phenotype.nSamples(), args.nPerms, m_phenotypeInvariant.type());
+        pg = new InvariantPermutation(m_phenotype.nSamples(), args.nPerms, m_phenotypeInvariant.type());
     else
-        pg = new UniformPermutationGenerator(m_phenotype.nSamples(), args.nPerms);
+        pg = new UniformPermutation(m_phenotype.nSamples(), args.nPerms);
     pg->setVerbose(true);
     mt.test(*pg, args.maxTscaled);
     delete pg;
