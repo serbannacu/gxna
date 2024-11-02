@@ -93,7 +93,7 @@ void Args::parse(int argc, char *argv[]) {
 void Args::read(const std::string& filename, bool strict) {
     std::ifstream is(filename.c_str());
     if (is)
-        std::cerr << "Reading args from " << filename << '\n';
+        std::cout << "Reading args from " << filename << '\n';
     else if (strict)
         throw Exception("Could not open " + filename);
     std::string key, val;

@@ -27,22 +27,19 @@ void GeneNetwork::readInteractions(const std::string& filename,
         std::istringstream ss(line);
         std::string gene1, gene2, type, source;
         ss >> gene1 >> gene2;
-        if (!ss) {
-            std::cerr << "readInteractions bad line " << line << '\n';
-        }
-        else {
-            auto p1 = gene2index.find(gene1);
-            auto p2 = gene2index.find(gene2);
-            if (p1 != gene2index.end() && p2 != gene2index.end()) {  // ignore unknown genes
-                auto n1 = p1->second;
-                auto n2 = p2->second;
-                ss >> type >> source;  // not using source for now
-                if (n1 != n2)  // ignore self-interactions
-                    addEdge(n1, n2, type);
-            }
+        if (!ss)
+            throw Exception("Bad gene interaction " + line);
+        auto p1 = gene2index.find(gene1);
+        auto p2 = gene2index.find(gene2);
+        if (p1 != gene2index.end() && p2 != gene2index.end()) {  // ignore unknown genes
+            auto n1 = p1->second;
+            auto n2 = p2->second;
+            ss >> type >> source;  // not using source for now
+            if (n1 != n2)  // ignore self-interactions
+                addEdge(n1, n2, type);
         }
     }
-    std::cerr << "Read " << m_nEdges << " interactions from " << filename << '\n';
+    std::cout << "Read " << m_nEdges << " interactions from " << filename << '\n';
     for (auto it : gene2index)
         setLabel(it.second, it.first);
 }

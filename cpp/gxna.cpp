@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::cerr << "GXNA Version 3.0\n";
+    std::cout << "GXNA Version 3.0\n";
     srand(args.seed);
 
     try {

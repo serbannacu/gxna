@@ -33,11 +33,9 @@ void PhenotypeVector::read(const std::string& filename) {
     if (nTypes() < 2)
         throw Exception("Need at least two phenotypes in " + filename);
 
-    std::cerr << "Read " << nSamples() << " samples and "
-              << nTypes() << " types from " << filename << ": ";
-    for (auto& name : m_type2name)
-        std::cerr << name << ' ';
-    std::cerr << '\n';
+    std::cout << "Read " << nSamples() << " samples and "
+              << nTypes() << " types from " << filename << ": "
+              << m_type2name << '\n';
 }
 
 void PhenotypeVector::filter(const std::vector<std::string>& v) {
@@ -116,7 +114,7 @@ void Experiment::run() {
             }
             m_testData.emplace_back(testData);
         }
-    std::cerr << "Testing " << m_testData.size() << " objects\n";
+    std::cout << "Testing " << m_testData.size() << " objects\n";
 
     MultipleTest<Experiment> mt(*this, m_testData.size());
     PermutationGenerator *pg;
@@ -196,7 +194,7 @@ void Experiment::setShrinkageFactor() {
     EmpiricalBayes eb;
     eb.estimate(logVar.mean(), logVar.var(), m_gene.size(),
                 m_phenotype.nSamples() - m_phenotype.nTypes());
-    std::cerr << "Empirical Bayes: df = " << eb.df() << " var = " << eb.var() << '\n';
+    std::cout << "Empirical Bayes: df = " << eb.df() << " var = " << eb.var() << '\n';
     for (auto& data : m_gene)
         data.shrinkageFactor = eb.shrinkageFactor(data.sd * data.sd);
 }
@@ -235,7 +233,7 @@ void Experiment::readProbes(const std::string& filename) {
         std::string probe, id = "NA";
         ss >> probe >> id;
         if (!ss) {
-            std::cerr << "readProbes bad line " << line << '\n';
+            throw Exception("Bad probe data " + line);
         }
         else if (id != "NA") {
             auto it = m_probe2geneID.find(probe);
@@ -250,12 +248,11 @@ void Experiment::readProbes(const std::string& filename) {
                 }
             }
             else if (it->second != id) {
-                std::cerr << "readProbes probe " << probe << " maps to multiple genes "
-                          << it->second << ' ' << id << '\n';
+                throw Exception("Probe " + probe + " maps to multiple genes");
             }
         }
     }
-    std::cerr << "Read " << m_probe2geneID.size() << " probes and "
+    std::cout << "Read " << m_probe2geneID.size() << " probes and "
               << m_gene.size() << " genes from " << filename << '\n';
 }
 
@@ -274,7 +271,7 @@ void Experiment::readGeneNames(const std::string& filename) {
             }
         }
     }
-    std::cerr << "Read " << n << " gene names from " << filename << "\n";
+    std::cout << "Read " << n << " gene names from " << filename << "\n";
 }
 
 // Read probe expression values from file
@@ -312,7 +309,7 @@ void Experiment::readExpression(const std::string& filename) {
                 ++nProbesRead;
             }
             else
-                std::cerr << "readExpression bad line " << line << '\n';
+                throw Exception("Bad probe expression " + line);
         }
     }
     for (auto& data : m_gene) {
@@ -322,7 +319,7 @@ void Experiment::readExpression(const std::string& filename) {
         }
     }
 
-    std::cerr << "Read " << nProbesRead << " expressions for " << nGenesRead
+    std::cout << "Read " << nProbesRead << " expressions for " << nGenesRead
               << " genes from " << filename << '\n';
 }
 
@@ -331,7 +328,7 @@ void Experiment::readExpression(const std::string& filename) {
 void Experiment::writeHTML(const std::string& htmlFilename,
                            const std::string& frameFilename,
                            const std::string& startingFrame) const {
-    std::cerr << "Writing HTML to " << htmlFilename << '\n';
+    std::cout << "Writing HTML to " << htmlFilename << '\n';
     std::ofstream os(htmlFilename.c_str());
     os << "<html>" << '\n';
     os << "<title>" << "GXNA " << args.name << ' ' << args.version << "</title>" << '\n';
