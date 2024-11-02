@@ -20,8 +20,8 @@ struct Args {
     // filenames
     std::string name;
     std::string version;
-    std::string refDir;
-    std::string inputDir;
+    std::string refDir;  // reference data
+    std::string expDir;  // experiment data (expression, phenotypes)
     std::string outputDir;
     std::string geneFile;
     std::string interactionFile;

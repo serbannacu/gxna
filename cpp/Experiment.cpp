@@ -76,18 +76,18 @@ std::string GeneData::label() const {
 
 Experiment::Experiment(Args& args_)
     : args(args_) {
-    m_phenotype.read(args.inputDir + "/" + args.phenotypeFile);
+    m_phenotype.read(args.expDir + "/" + args.phenotypeFile);
     if (args.phenotypes.size())
         m_phenotype.filter(args.phenotypes);
     if (args.invariantPerms) {  // read secondary phenotype, if needed
-        m_phenotypeInvariant.read(args.inputDir + "/" + args.typeFile);
+        m_phenotypeInvariant.read(args.expDir + "/" + args.typeFile);
         if (m_phenotypeInvariant.nSamples() != m_phenotype.nSamples())
             throw Exception("Bad number of samples in " + args.typeFile);
     }
 
     readProbes(args.refDir + "/" + args.probeFile);
     readGeneNames(args.refDir + "/" + args.geneFile);
-    readExpression(args.inputDir + "/" + args.expressionFile);
+    readExpression(args.expDir + "/" + args.expressionFile);
     m_geneNetwork.setSize(m_gene.size());  // so genes with no interactions are included
     m_geneNetwork.readInteractions(args.refDir + "/" + args.interactionFile, m_geneID2index);
 

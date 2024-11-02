@@ -26,7 +26,7 @@ std::ostream& operator<<(std::ostream& os, const AlgoType& x) {
 Args::Args()
     : version("000"),
       refDir("refdata"),
-      inputDir("input"),
+      expDir("expdata"),
       outputDir("output"),
       geneFile("geneID2name"),
       interactionFile("human.gra"),
@@ -106,7 +106,7 @@ void Args::print(std::ostream& os) const {
     os << "name " << name << '\n';
     os << "version " << version << '\n';
     os << "refDir " << refDir << '\n';
-    os << "inputDir " << inputDir << '\n';
+    os << "expDir " << expDir << '\n';
     os << "outputDir " << outputDir << '\n';
     os << "geneFile " << geneFile << '\n';
     os << "interactionFile " << interactionFile << '\n';
@@ -179,7 +179,7 @@ void Args::setFilenames() {
     if (!typeFile.size())
         typeFile = name + ".typ";
     auto argsFile = name + ".arg";
-    read(inputDir + "/" + argsFile, false);  // ignore if file is missing
+    read(expDir + "/" + argsFile, false);  // ignore if file is missing
 }
 
 bool Args::setImpl(const std::string& key, const std::string& val) {
@@ -191,8 +191,8 @@ bool Args::setImpl(const std::string& key, const std::string& val) {
         from_string(version, val);
     else if (key == "refDir")
         from_string(refDir, val);
-    else if (key == "inputDir")
-        from_string(inputDir, val);
+    else if (key == "expDir")
+        from_string(expDir, val);
     else if (key == "outputDir")
         from_string(outputDir, val);
     else if (key == "geneFile")

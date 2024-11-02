@@ -75,9 +75,10 @@ such as `human.gra` and `mouse.gra`. Each microarray platform has a
 [probe annotation file](#probe-annotation-files)
 that maps each probe ID to its corresponding gene; multiple probes can map to the same gene.
 
-Experiment data resides in the [`input`](input) directory. Each experiment needs at least two files: a `.phe` file containing the
-phenotype of each sample, and a `.exp` file containing expression data, one line per probe. Each line starts with the probe ID,
-followed by expression values (one per sample).
+Experiment data resides in the [`expdata`](expdata) directory.
+Each experiment needs at least two files: a `.phe` file containing the
+phenotype of each sample, and a `.exp` file containing expression data, one line per probe.
+Each line starts with the probe ID, followed by expression values (one per sample).
 
 All files are standard text, with columns separated by spaces. Genes are referenced by their numeric GeneID from the NCBI Gene database.
 Phenotypes can be any string.
@@ -86,14 +87,14 @@ Phenotypes can be any string.
 
 First, run
 ```
-bin/gxna -name sim -probeFile human1av2.ann
+bin/gxna -name test -probeFile human1av2.ann
 ```
-Both parameters are required. They tell the program to read experiment data from `sim.phe` and `sim.exp`
+Both parameters are required. They tell the program to read experiment data from `test.phe` and `test.exp`
 (simulated data included in the repo) and use the probe
 annotation file `human1av2.ann` for the Agilent Human 1A Version 2 microarray.
 
 Results are be written into the
-`output/sim/000/` directory. The string `000` can be changed with `-version`. It makes it easy to run GXNA multiple times
+`output/test/000/` directory. The string `000` can be changed with `-version`. It makes it easy to run GXNA multiple times
 with various parameters and store the results in separate directories.
 Among the output files, `index.html` is the most human friendly; open it in your browser of choice.
 
@@ -104,18 +105,21 @@ Running the program with default parameters performs single-gene analysis, so al
 
 For something more interesting, run
 ```
-bin/gxna -name sim -probeFile human1av2.ann -version 001 -algoType GXNA
+bin/gxna -name test -probeFile human1av2.ann -version 001 -algoType GXNA
 ```
-The output files are now in `output/sim/001/`. The `-algoType GXNA` parameter directs the program to perform an adapted search.
+The output files are now in `output/test/001/`.
+The `-algoType GXNA` parameter directs the program to perform an adapted search.
 The clusters in the left panel now have size 15 (the default search depth).
-The right panel has the list of genes in each cluster. For each gene, it gives name, geneID, number of probes that map to it,
+The right panel has the list of genes in each cluster.
+For each gene, it gives name, geneID, number of probes that map to it,
 standard deviation of expression (over all samples), and score (in this case, the *t*-statistic).
 
 You may notice there are gaps in the ranks of the top clusters. This is because some of these have many genes in common,
 and by default GXNA does not display clusters that overlap more than 75% with higher scoring ones.
 
-If Graphviz is installed, adding `-draw true` to the command line will render the top clusters into SVG files. If you refresh
-the browser, the right panel should now show drawings. Each node displays the gene name and score, and each edge has the
+If Graphviz is installed, adding `-draw true` to the command line will render the top clusters into SVG files.
+If you refresh the browser, the right panel should now show drawings.
+Each node displays the gene name and score, and each edge has the
 interaction [type](#interaction-types) and direction (if known).
 
 ## Output
@@ -149,14 +153,14 @@ only matters when comparing clusters of different sizes.
 Parameters can be set with command-line arguments such as `-draw true`. They can also be read from a file,
 with each line consisting of a name and a value e.g. `draw true` (no dash).
 
-If `<name>` is the simulation name and the file
-`input/<name>.arg` exists, it will be read automatically. Another file can be specified on the command line with
-`-argFile <filename>`. These files can be used to effectively change the default values of multiple parameters.
+If `<name>` is the experiment name and the file
+`expdata/<name>.arg` exists, it will be read automatically. Another file can be specified on the command line with
+`-argFile <filename>`. This can be used to effectively change parameter default values.
 
 Boolean values can be set in various ways: `True`, `T`, `true` and `1` are all equivalent.
 
 Below is a description of the most useful parameters. See the source code for a complete list.
-- `name`: the name is part of the input filenames and output path.
+- `name`: the experiment name is part of the input filenames and output path.
 - `version`: the version is part of the output path.
 - `interactionFile`: gene interaction filename (default: `human.gra`).
 - `probeFile`: probe annotation filename.
