@@ -1,0 +1,26 @@
+CC = g++
+CFLAGS = -g -std=c++17 -Wall -W -MMD -O3
+LDFLAGS = -g
+
+SOURCES = Args.cpp Distribution.cpp Statistics.cpp RandomPermutation.cpp GeneNetwork.cpp Experiment.cpp gxna.cpp
+DEPENDS = $(addprefix build/, $(SOURCES:.cpp=.d))
+OBJS = $(addprefix build/, $(SOURCES:.cpp=.o))
+
+all: build/gxna
+
+test: test-distribution
+
+clean:
+	rm -rf build
+build:
+	mkdir -p build
+
+test-%: $(OBJS) build/test_%.o
+	$(CC) $(LDFLAGS) $^ -o build/$@
+
+build/gxna: $(OBJS)
+
+build/%.o: */%.cpp | build
+	$(CC) $(CFLAGS) -Iinclude -c $< -o $@
+
+-include $(DEPENDS)
