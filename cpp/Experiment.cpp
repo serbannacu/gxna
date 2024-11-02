@@ -33,7 +33,8 @@ void PhenotypeVector::read(const std::string& filename) {
     if (nTypes() < 2)
         throw Exception("Need at least two phenotypes in " + filename);
 
-    std::cerr << "Read " << nSamples() << " samples and " << nTypes() << " types from " << filename << ": ";
+    std::cerr << "Read " << nSamples() << " samples and "
+              << nTypes() << " types from " << filename << ": ";
     for (auto& name : m_type2name)
         std::cerr << name << ' ';
     std::cerr << '\n';
@@ -59,8 +60,7 @@ void GeneData::print(std::ostream& os) const {
     os << std::fixed << std::setprecision(3)
        << std::setw(2) << nProbes << ' '
        << std::setw(7) << sd << ' '
-       << std::setw(7) << score
-        ;
+       << std::setw(7) << score;
 }
 
 static std::ostream& operator<<(std::ostream& os, const GeneData& x) {
@@ -75,12 +75,11 @@ std::string GeneData::label() const {
 }
 
 Experiment::Experiment(Args& args_)
-    : args(args_)
-{
+    : args(args_) {
     m_phenotype.read(args.inputDir + "/" + args.phenotypeFile);
     if (args.phenotypes.size())
         m_phenotype.filter(args.phenotypes);
-    if (args.invariantPerms) { // read secondary phenotype, if needed
+    if (args.invariantPerms) {  // read secondary phenotype, if needed
         m_phenotypeInvariant.read(args.inputDir + "/" + args.typeFile);
         if (m_phenotypeInvariant.nSamples() != m_phenotype.nSamples())
             throw Exception("Bad number of samples in " + args.typeFile);
@@ -89,58 +88,61 @@ Experiment::Experiment(Args& args_)
     readProbes(args.refDir + "/" + args.probeFile);
     readGeneNames(args.refDir + "/" + args.geneFile);
     readExpression(args.inputDir + "/" + args.expressionFile);
-    m_geneNetwork.setSize(m_gene.size()); // so genes with no interactions are still included in the network
+    m_geneNetwork.setSize(m_gene.size());  // so genes with no interactions are included
     m_geneNetwork.readInteractions(args.refDir + "/" + args.interactionFile, m_geneID2index);
 
     for (auto& data : m_gene) {
         FastDataSet d(data.expression);
         data.sd = d.sd();
     }
-    if (args.shrink) // use empirical Bayes shrinkage
+    if (args.shrink)  // use empirical Bayes shrinkage
         setShrinkageFactor();
 }
 
 void Experiment::run() {
-    // select gene roots for multiple testing
-    // potential roots will not be within args.minDistance of each other
+    // Select gene roots for multiple testing
+    // Potential roots will not be within args.minDistance of each other
     std::vector<bool> ignore(m_gene.size());
     for (size_t root = 0; root < m_geneNetwork.nNodes(); ++root)
-        if (m_geneNetwork.degree(root) >= unsigned(args.minDegree) && m_gene[root].sd >= args.minSD && !ignore[root]) {
+        if (m_geneNetwork.degree(root) >= unsigned(args.minDegree)
+            && m_gene[root].sd >= args.minSD && !ignore[root]) {
             TestData testData;
             testData.root = root;
             if (args.algoType == AlgoType::Basic)
                 testData.cluster = m_geneNetwork.ball(root, args.radius);
-            if (args.minDistance > 0) { // do not use nearby genes as roots
+            if (args.minDistance > 0) {  // do not use nearby genes as roots
                 for (auto v : m_geneNetwork.ball(root, args.minDistance))
                     ignore[v] = true;
             }
             m_testData.emplace_back(testData);
         }
     std::cerr << "Testing " << m_testData.size() << " objects\n";
-    
+
     MultipleTest<Experiment> mt(*this, m_testData.size());
     PermutationGenerator *pg;
     if (args.invariantPerms)
-        pg = new InvariantPermutation(m_phenotype.nSamples(), args.nPerms, m_phenotypeInvariant.type());
+        pg = new InvariantPermutation(m_phenotype.nSamples(), args.nPerms,
+                                      m_phenotypeInvariant.type());
     else
         pg = new UniformPermutation(m_phenotype.nSamples(), args.nPerms);
     pg->setVerbose(true);
     mt.test(*pg, args.maxTscaled);
     delete pg;
 
-    for (size_t i = 0; i < m_gene.size(); ++i) // need to set labels before calling printResults
-        m_geneNetwork.setLabel(i, m_gene[i].label()); // label includes gene score
+    for (size_t i = 0; i < m_gene.size(); ++i)  // set labels before calling printResults
+        m_geneNetwork.setLabel(i, m_gene[i].label());  // label includes gene score
 
     printResults(mt);
 }
 
-static double computeScore(const std::vector<double>& expression, const std::vector<int>& phenotype, int nPhenotypes) {
-    if (nPhenotypes > 2) { // F statistic
+static double computeScore(const std::vector<double>& expression,
+                           const std::vector<int>& phenotype, int nPhenotypes) {
+    if (nPhenotypes > 2) {  // F statistic
         double f = fstat(&expression[0], phenotype, nPhenotypes);
         return zfCDF(f, nPhenotypes - 1, phenotype.size() - nPhenotypes);
     }
-    else { // T statistic; may want to convert to z-score
-        double t = tstatPheno(&expression[0], phenotype, 0, 1); // pheno 0 vs 1
+    else {  // T statistic; may want to convert to z-score
+        double t = tstatPheno(&expression[0], phenotype, 0, 1);  // pheno 0 vs 1
         return t;
     }
 }
@@ -159,7 +161,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
         geneScorePermAbs.emplace_back(fabs(score));
     }
     m_geneNetwork.setScores(geneScorePermAbs, args.scalingExponent);
-  
+
     // Recompute cluster scores
     std::vector<double> clusterScorePermAbs;
     clusterScorePermAbs.reserve(m_testData.size());
@@ -171,7 +173,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
                 testData.score = val;
         }
     }
-    else { // AlgoType::GXNA
+    else {  // AlgoType::GXNA
         GeneNetwork::NodeList cluster;
         for (auto& testData : m_testData) {
             auto val = m_geneNetwork.findSubgraph(testData.root, args.depth, args.flexSize, cluster);
@@ -189,21 +191,23 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
 void Experiment::setShrinkageFactor() {
     FastDataSet logVar;
     for (auto& data : m_gene)
-        if (data.sd > 0) // constant probes are presumably bad so we ignore them
+        if (data.sd > 0)  // constant probes are likely bad so we ignore them
             logVar.insert(2 * log(data.sd));
     EmpiricalBayes eb;
-    eb.estimate(logVar.mean(), logVar.var(), m_gene.size(), m_phenotype.nSamples() - m_phenotype.nTypes());
-    std::cerr << "Shrinkage parameters: df = " << eb.df() << " var = " << eb.var() << '\n';
+    eb.estimate(logVar.mean(), logVar.var(), m_gene.size(),
+                m_phenotype.nSamples() - m_phenotype.nTypes());
+    std::cerr << "Empirical Bayes: df = " << eb.df() << " var = " << eb.var() << '\n';
     for (auto& data : m_gene)
         data.shrinkageFactor = eb.shrinkageFactor(data.sd * data.sd);
 }
 
-// scoring function for MultipleTest, predefined case
-double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes, const std::vector<int>& phenotype) {
-    if (args.sumScore || genes.size() < 2) { // compute sum(score)
+// Scoring function for MultipleTest, predefined case
+double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes,
+                                 const std::vector<int>& phenotype) {
+    if (args.sumScore || genes.size() < 2) {  // compute sum(score)
         return m_geneNetwork.subgraphScore(genes);
     }
-    else { // compute score(sum)
+    else {  // compute score(sum)
         std::vector<double> sum(m_phenotype.nSamples());
         for (auto gene : genes) {
             if (args.sumSigned && m_gene[gene].scorePerm < 0)
@@ -215,10 +219,11 @@ double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes, const std::
     }
 }
 
-// Read microarray annotation file
-// Each line describes a probe, in the format: probe_id gene_id
-// Gene id is typically the NCBI Gene database id (formerly LocusLink / EntrezGene)
-// Gene id "NA" means the probe does not map to a gene; such probes are ignored
+// Read microarray annotation file.
+// Each line describes a probe, in the format:
+//     probe_id gene_id
+// Gene id is typically the NCBI Gene database id (formerly LocusLink / EntrezGene).
+// Gene id "NA" means the probe does not map to a gene; such probes are ignored.
 
 void Experiment::readProbes(const std::string& filename) {
     std::ifstream is(filename.c_str());
@@ -234,9 +239,9 @@ void Experiment::readProbes(const std::string& filename) {
         }
         else if (id != "NA") {
             auto it = m_probe2geneID.find(probe);
-            if (it == m_probe2geneID.end()) { // new probe
+            if (it == m_probe2geneID.end()) {  // new probe
                 m_probe2geneID[probe] = id;
-                if (m_geneID2index.find(id) == m_geneID2index.end()) { // new gene
+                if (m_geneID2index.find(id) == m_geneID2index.end()) {  // new gene
                     m_geneID2index[id] = m_gene.size();
                     GeneData gene;
                     gene.id = id;
@@ -244,7 +249,7 @@ void Experiment::readProbes(const std::string& filename) {
                     m_gene.emplace_back(gene);
                 }
             }
-            else if (it->second != id) { 
+            else if (it->second != id) {
                 std::cerr << "readProbes probe " << probe << " maps to multiple genes "
                           << it->second << ' ' << id << '\n';
             }
@@ -273,10 +278,11 @@ void Experiment::readGeneNames(const std::string& filename) {
 }
 
 // Read probe expression values from file
-// Each line describes a probe, in the format: probe_id expr_1 expr_2 .. expr_n (one expression per phenotype)
+// Each line describes a probe, in the format:
+//     probe_id expr_1 expr_2 .. expr_n (one expression per phenotype)
 // Probes that do not map to a gene (as per the microarray annotation file) are ignored
 // Genes with no probes get expression 0
-// Genes with multiple probes (or multiple copies of the same probe) get probe average (for now)
+// Genes with multiple probes (or multiple copies of the same probe) get probe average
 // Missing / NA expression values are not allowed (for now)
 
 void Experiment::readExpression(const std::string& filename) {
@@ -316,12 +322,15 @@ void Experiment::readExpression(const std::string& filename) {
         }
     }
 
-    std::cerr << "Read " << nProbesRead << " expressions for " << nGenesRead << " genes from " << filename << '\n';
+    std::cerr << "Read " << nProbesRead << " expressions for " << nGenesRead
+              << " genes from " << filename << '\n';
 }
 
-// output functions
+// Output functions
 
-void Experiment::writeHTML(const std::string& htmlFilename, const std::string& frameFilename, const std::string& startingFrame) const {
+void Experiment::writeHTML(const std::string& htmlFilename,
+                           const std::string& frameFilename,
+                           const std::string& startingFrame) const {
     std::cerr << "Writing HTML to " << htmlFilename << '\n';
     std::ofstream os(htmlFilename.c_str());
     os << "<html>" << '\n';
@@ -358,8 +367,9 @@ void addCell(std::ostream& os, const T& val) {
     os << "<td>" << val << "</td>" << '\n';
 }
 
-static void addRow(std::ostream& os, const std::string& url, size_t n, const std::string& root, const std::string& rootid, size_t size,
-                   double score, double rawp, double adjp) {                 
+static void addRow(std::ostream& os, const std::string& url, size_t n,
+                   const std::string& root, const std::string& rootid,
+                   size_t size, double score, double rawp, double adjp) {
     os << "<tr>" << '\n';
     if (url.size())
         addCell(os, "<a href=\"" + url + "\" target=\"frame2\">" + std::to_string(n) + "</a>");
@@ -377,7 +387,7 @@ static void addRow(std::ostream& os, const std::string& url, size_t n, const std
 void Experiment::printResults(const MultipleTest<Experiment>& mt) {
     std::string path = args.outputDir + "/" + args.name + "/" + args.version;
     std::filesystem::create_directories(path);
-    
+
     std::string htmlFilename = "index.html";
     std::string frameFilename = "frame1.html";
     std::string startingFrame;
@@ -408,21 +418,21 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
             osResults << std::setw(6) << m_gene[v].id << ' ';
         osResults << '\n';
 
-        // now check overlap between current and previous clusters
+        // Now check overlap between current and previous clusters
         size_t nPrinted = 0;
         for (auto& v : testData.cluster)
             if (printed[v])
                 ++nPrinted;
-        if (nPrinted <= args.maxOverlap * size) { // low overlap, OK to print
+        if (nPrinted <= args.maxOverlap * size) {  // low overlap, OK to print
             for (auto& v : testData.cluster)
-                printed[v] = true; // mark as printed
+                printed[v] = true;  // mark as printed
             std::string url;
             if (nDetailed < args.nDetailed) {
                 std::string prefix = "graph_" + std::to_string(nDetailed) + ".";
                 std::string filenameTXT = path + "/" + prefix + "txt";
                 std::string filenameDOT = path + "/" + prefix + "dot";
                 std::string filenameSVG = path + "/" + prefix + "svg";
-                bool draw = args.draw && size > 1; // do not draw singletons
+                bool draw = args.draw && size > 1;  // do not draw singletons
                 url = prefix + (draw ? "svg" : "txt");
                 if (!startingFrame.size())
                     startingFrame = url;
@@ -441,4 +451,4 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt) {
     writeHTML(path + "/" + htmlFilename, frameFilename, startingFrame);
 }
 
-} // namespace gxna
+}  // namespace gxna
