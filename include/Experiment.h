@@ -1,5 +1,3 @@
-// Master class that manages the various data sets and runs the analysis
-
 #pragma once
 
 #include "Args.h"
@@ -11,6 +9,8 @@
 #include <unordered_map>
 
 namespace gxna {
+
+// Experiment is the main class that manages input data sets and runs the analysis.
 
 template<typename Type> class MultipleTest;
 class Permutation;

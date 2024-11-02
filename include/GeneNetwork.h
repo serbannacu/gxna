@@ -6,12 +6,12 @@
 #include <vector>
 #include <unordered_map>
 
+namespace gxna {
+
 // A gene network is an undirected (sparse) graph where
 // nodes represent genes and edges represent interactions.
 // Nodes are indexed by integers, and each node stores the list of its neighbors.
 // Interaction type data is stored as a string but only used for drawing the network.
-
-namespace gxna {
 
 class GeneNetwork {
  public:

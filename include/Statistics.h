@@ -1,5 +1,3 @@
-// Statistical tools: mean, variance, T-stat, F-stat
-
 #pragma once
 
 #include <cmath>
@@ -7,7 +5,7 @@
 
 namespace gxna {
 
-// FastDataSet: basic (only tracks mean and variance) but fast
+// Statistical tools: mean, variance, T-stat, F-stat.
 
 class FastDataSet {
  public:

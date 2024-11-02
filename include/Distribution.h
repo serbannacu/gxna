@@ -1,13 +1,13 @@
-// Common distributions (normal, T, F)
-//
-// For a random variable X with distribution Dist:
-//     DistCDF(x) is Prob(X <= x)
-//     DistCDFInv(x) gives the quantile corresponding to x
-//     zDistCDF(x) is x converted into an equivalent gaussian
-
 #pragma once
 
 namespace gxna {
+
+// Common distributions (normal, T, F)
+
+// For a random variable X with distribution dist:
+//     distCDF(x) is Prob(X <= x)
+//     distCDFInv(x) gives the quantile corresponding to x
+//     zdistCDF(x) is x converted into an equivalent gaussian
 
 // Normal distribution
 double normCDF(double x);
