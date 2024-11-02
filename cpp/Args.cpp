@@ -10,7 +10,7 @@
 namespace gxna {
 
 std::ostream& operator<<(std::ostream& os, const AlgoType& x) {
-    switch(x) {
+    switch (x) {
     case AlgoType::Basic:
         os << "Basic";
         break;
@@ -23,37 +23,37 @@ std::ostream& operator<<(std::ostream& os, const AlgoType& x) {
     return os;
 }
 
-Args::Args() :
-    version("000"),
-    refDir("refdata"),
-    inputDir("input"),
-    outputDir("output"),
-    geneFile("geneID2name"),
-    interactionFile("human.gra"),
-    algoType(AlgoType::Basic),
-    radius(0),
-    depth(15),
-    flexSize(false),
-    minSD(0),
-    minDegree(0),
-    minDistance(0),
-    sumScore(true),
-    sumSigned(true),
-    scalingExponent(0.6),
-    maxTscaled(false),
-    nPerms(100),
-    invariantPerms(false),
-    shrink(false),
-    seed(5),
-    nRows(250),
-    nDetailed(25),
-    maxOverlap(0.75),
-    draw(false)
+Args::Args()
+    : version("000"),
+      refDir("refdata"),
+      inputDir("input"),
+      outputDir("output"),
+      geneFile("geneID2name"),
+      interactionFile("human.gra"),
+      algoType(AlgoType::Basic),
+      radius(0),
+      depth(15),
+      flexSize(false),
+      minSD(0),
+      minDegree(0),
+      minDistance(0),
+      sumScore(true),
+      sumSigned(true),
+      scalingExponent(0.6),
+      maxTscaled(false),
+      nPerms(100),
+      invariantPerms(false),
+      shrink(false),
+      seed(5),
+      nRows(250),
+      nDetailed(25),
+      maxOverlap(0.75),
+      draw(false)
 {}
 
 void Args::check() {
-    // filter out genes without interactions, unless doing single gene analysis
-    if (minDegree == 0 and (algoType == AlgoType::GXNA || radius > 0))
+    // Filter out genes without interactions, unless doing single gene analysis
+    if (minDegree == 0 && (algoType == AlgoType::GXNA || radius > 0))
         minDegree = 1;
 
     const char *msg = nullptr;
@@ -179,7 +179,7 @@ void Args::setFilenames() {
     if (!typeFile.size())
         typeFile = name + ".typ";
     auto argsFile = name + ".arg";
-    read(inputDir + "/" + argsFile, false); // ignore if file is missing
+    read(inputDir + "/" + argsFile, false);  // ignore if file is missing
 }
 
 bool Args::setImpl(const std::string& key, const std::string& val) {
@@ -262,4 +262,4 @@ void Args::set(const std::string& key, const std::string& val) {
     }
 }
 
-} // namespace gxna
+}  // namespace gxna

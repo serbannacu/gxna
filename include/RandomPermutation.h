@@ -7,7 +7,7 @@ namespace gxna {
 
 // Permutation of the integers {0, 1, 2, ..., n - 1}
 class Permutation {
-public:
+ public:
     Permutation(size_t n)
         : m_v(n) {
         init();
@@ -38,12 +38,12 @@ public:
         randomize(0, m_v.size());
     }
 
-private:
+ private:
     std::vector<int> m_v;
 };
 
 class PermutationHistogram {
-public:
+ public:
     PermutationHistogram(size_t n) {
         m_count.resize(n);
         for (auto& v : m_count)
@@ -60,7 +60,7 @@ public:
 
     void print(std::ostream& os, int prec = 4) const;
 
-private:
+ private:
     std::vector< std::vector<int> > m_count;
     size_t m_n;
     size_t m_n_add;
@@ -71,7 +71,7 @@ private:
 // The first permutation returned is guaranteed to be Id.
 
 class PermutationGenerator {
-public:
+ public:
     PermutationGenerator(size_t n, size_t limit)
         : m_perm(n),
           m_count(0),
@@ -96,10 +96,10 @@ public:
 
     bool next();
 
-protected:
+ protected:
     Permutation m_perm;
 
-private:
+ private:
     virtual void update() = 0;  // generate next permutation, store in m_perm
     void showProgress();
 
@@ -112,12 +112,12 @@ private:
 // Uniform random permutation
 
 class UniformPermutation : public PermutationGenerator {
-public:
+ public:
     UniformPermutation(size_t n, size_t limit)
         : PermutationGenerator(n, limit)
     {}
 
-private:
+ private:
     virtual void update() {
         m_perm.randomize();
     }
@@ -133,10 +133,10 @@ private:
 // so {0, 0, 1, 1, 1} is OK but {0, 1, 0, 1, 1} is not.
 
 class InvariantPermutation : public PermutationGenerator {
-public:
+ public:
     InvariantPermutation(size_t n, size_t limit, const std::vector<int>& types);
 
-private:
+ private:
     virtual void update();
 
     std::vector<int> m_typeCount;

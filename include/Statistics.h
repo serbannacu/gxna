@@ -10,7 +10,7 @@ namespace gxna {
 // FastDataSet: basic (only tracks mean and variance) but fast
 
 class FastDataSet {
-public:
+ public:
     FastDataSet() {}
 
     FastDataSet(const std::vector<double>& vec) {
@@ -54,7 +54,7 @@ public:
     friend double tstatEqual(const FastDataSet&, const FastDataSet&);
     friend double fstat(const double *x, const std::vector<int>& pheno, const int nPheno);
 
-private:
+ private:
     int n = 0;
     double sumx = 0;
     double sumxx = 0;  // sum of squares
@@ -76,7 +76,7 @@ double fstat(const double *x, const std::vector<int>& pheno, const int nPheno);
 // Gordon Smyth (2004), Linear models and empirical Bayes methods
 // for assessing differential expression in microarray experiments
 class EmpiricalBayes {
-public:
+ public:
     // df is data degrees of freedom
     void estimate(double logVarMean, double logVarVar, int nGenes, int df);
 
@@ -84,7 +84,7 @@ public:
     double df() const { return m_df; }
     double var() const { return m_var; }
 
-private:
+ private:
     double m_df = 0;
     double m_var = 0;
     double m_ratio = 0;

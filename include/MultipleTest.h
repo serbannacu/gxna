@@ -20,8 +20,8 @@ namespace gxna {
 
 template<class ScoreCalculator>
 class MultipleTest {
-public:
-    MultipleTest(ScoreCalculator& calc, int nObjects) : 
+ public:
+    MultipleTest(ScoreCalculator& calc, int nObjects) :
         m_calc(calc),
         m_nObjects(nObjects),
         m_rawP(nObjects, 1.0),
@@ -40,17 +40,17 @@ public:
 
         // finish computing P-values
         for (int i = 1; i < m_nObjects; i++) {
-            if (m_adjP[i] < m_adjP[i-1]) // enforce monotonicity
+            if (m_adjP[i] < m_adjP[i-1])  // enforce monotonicity
                 m_adjP[i] = m_adjP[i-1];
         }
         m_rawP /= pg.count();
         m_adjP /= pg.count();
     }
-    
+
     void maxT(PermutationGenerator& pg) {
-        while (pg.next()) { // generate new permutation
+        while (pg.next()) {  // generate new permutation
             auto score = m_calc(pg.get());
-            if (pg.count() == 1) // first perm housekeeping
+            if (pg.count() == 1)  // first perm housekeeping
                 setRank(m_origT = score);
             else
                 updateP(score);
@@ -61,14 +61,14 @@ public:
         std::vector< std::vector<double> > v_score;
         std::vector<FastDataSet> v_data(m_nObjects);
 
-        while (pg.next()) { // compute all scores for all perms
+        while (pg.next()) {  // compute all scores for all perms
             auto score = m_calc(pg.get());
             v_score.emplace_back(score);
             for (int i = 0; i < m_nObjects; ++i)
                 v_data[i].insert(score[i]);
         }
 
-        for (int i = 0; i < m_nObjects; ++i) { // rescale scores
+        for (int i = 0; i < m_nObjects; ++i) {  // rescale scores
             double mu = v_data[i].mean();
             double sigma = v_data[i].sd();
             for (auto& score : v_score) {
@@ -83,7 +83,7 @@ public:
             updateP(v_score[j]);
     }
 
-private:
+ private:
     void setRank(const std::vector<double>& score) {
         m_rank.resize(m_nObjects);
         for (int i = 0; i < m_nObjects; i++)
@@ -94,18 +94,18 @@ private:
 
     void updateP(const std::vector<double>& score) {
         double currentMax = std::numeric_limits<double>::min();
-        for (int i = m_nObjects - 1; i >= 0; i--) { // go thru all objects
+        for (int i = m_nObjects - 1; i >= 0; i--) {  // go thru all objects
             int k = m_rank[i];
             double T = score[k];
             if (currentMax < T)
                 currentMax = T;
-            if (T >= m_origT[k]) // update raw count
+            if (T >= m_origT[k])  // update raw count
                 ++m_rawP[i];
-            if (currentMax >= m_origT[k]) // update adjusted count
+            if (currentMax >= m_origT[k])  // update adjusted count
                 ++m_adjP[i];
         }
     }
-    
+
     ScoreCalculator& m_calc;
     int m_nObjects;
     std::vector<double> m_origT;
@@ -114,4 +114,4 @@ private:
     std::vector<double> m_adjP;
 };
 
-} // namespace gxna
+}  // namespace gxna

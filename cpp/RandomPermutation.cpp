@@ -7,7 +7,7 @@
 
 namespace gxna {
 
-inline int urand(int n) { // uniform random between 0 and n-1
+inline int urand(int n) {  // uniform random between 0 and n-1
     return (std::rand() / (((double) RAND_MAX) + 1)) * n;
 }
 
