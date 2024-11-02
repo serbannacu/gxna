@@ -63,7 +63,7 @@ Download the code with `git clone https://github.com/serbannacu/gxna.git` (or vi
 Inside the repo directory, run `cmake -S . -B build` followed by `cmake --build build`.
 This will build the binary `build/gxna`.
 
-If [`cmake`](https://cmake.org/download) is not available on your system,
+If [cmake](https://cmake.org/download) is not available on your system,
 you can also try to build with `make -f makefile.unix`.
 This should work on Unix-like systems like Linux and MacOS.
 Make sure `gcc` is installed and it supports C++17.
