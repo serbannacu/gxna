@@ -1,15 +1,20 @@
 # Introduction
 
-**GXNA (Gene eXpression Network Analysis)** is a method for analyzing gene expression data using interaction networks.
-Below is an informal guide to the algorithm and the software that implements it. For more background and technical details,
+**GXNA (Gene eXpression Network Analysis)** is a method for analyzing gene expression data
+using interaction networks. Below is an informal guide to the algorithm and the software
+that implements it. For more background and technical details,
 see this [paper](https://serbannacu.github.io/gxna/bioinformatics.pdf).
 
-A standard goal of gene expression experiments is to find genes associated with a biological process or disease.
-Multiple samples are obtained, and gene expression for each sample is measured for a large number of genes
-using a high throughput technology like [microarrays](https://en.wikipedia.org/wiki/DNA_microarray)
-or [RNA-Seq](https://en.wikipedia.org/wiki/RNA-Seq). For each gene, a differential expression score is computed.
-For example, in a cancer experiment, the gene score could be the *t*-statistic that compares its expression values in tumor vs.
-normal samples. Genes that are highly expressed or inhibited in cancer can be further investigated as therapeutic targets.
+A standard goal of gene expression experiments is to find genes associated with a
+biological process or disease. Multiple samples are obtained, and gene expression
+for each sample is measured for a large number of genes using a high throughput technology
+like [microarrays](https://en.wikipedia.org/wiki/DNA_microarray)
+or [RNA-Seq](https://en.wikipedia.org/wiki/RNA-Seq).
+For each gene, a differential expression score is computed.
+For example, in a cancer experiment, the gene score could be the
+[*t*-statistic](https://en.wikipedia.org/wiki/Welch%27s_t-test)
+that compares its expression values in tumor vs. normal samples.
+Genes that are highly expressed or inhibited in cancer can be further investigated as therapeutic targets.
 
 However, in real organisms, one gene rarely acts in isolation. Processes typically involve many genes,
 acting as part of biological pathways, and an immense amount of work has gone into understanding these pathways.
@@ -34,7 +39,7 @@ Given the interaction graph and a gene expression data set, the algorithm search
 - **Ball search**. Subgraphs are spheres of fixed radius *R* centered at some root node (*R* = 0 is the same as single gene analysis).
 - **Adapted search**. Given a root node, the subgraph is constructed by greedy search. At each step the adjacent node with
 the highest score is added, until a fixed size is reached or the subgraph score cannot be increased further.
-The adapted search tends to perform better in practive. Any gene can be a root, subject to some filtering rules and heuristics
+The adapted search tends to perform better in practice. Any gene can be a root, subject to some filtering rules and heuristics
 to reduce subgraph overlap.
 
 ## Statistical Significance
