@@ -34,13 +34,15 @@ generate interaction graphs for human and mouse genes, included with the softwar
 
 ## Subgraph Search
 
-Given the interaction graph and a gene expression data set, the algorithm searches for small connected subgraphs
-(clusters of interacting genes) that are differentially expressed. There are two ways to select the subgraphs:
+Given the interaction graph and a gene expression data set, the algorithm searches for
+small connected subgraphs (clusters of interacting genes) that are differentially expressed.
+There are two ways to select the subgraphs:
 - **Ball search**. Subgraphs are spheres of fixed radius *R* centered at some root node (*R* = 0 is the same as single gene analysis).
-- **Adapted search**. Given a root node, the subgraph is constructed by greedy search. At each step the adjacent node with
-the highest score is added, until a fixed size is reached or the subgraph score cannot be increased further.
-The adapted search tends to perform better in practice. Any gene can be a root, subject to some filtering rules and heuristics
-to reduce subgraph overlap.
+- **Adapted search**. Given a root node, the subgraph is constructed by greedy search.
+At each step the adjacent node with the highest score is added, until a fixed size is reached
+or the subgraph score cannot be increased further.
+The adapted search tends to perform better in practice. Any gene can be a root,
+subject to some filtering rules and heuristics to reduce subgraph overlap.
 
 ## Statistical Significance
 
@@ -48,8 +50,8 @@ The massively parallel nature of the data leads to large numbers of gene or gene
 and requires statistical adjustments to avoid false positives due to random noise. A standard approach
 for single-gene analysis is to control the [FWER](https://en.wikipedia.org/wiki/Family-wise_error_rate)
 (family-wise error rate) using [permutation](https://en.wikipedia.org/wiki/Permutation_test) methods.
-GXNA adapts this in the context of the subgraph search algorithm to compute statistical significance (p-values)
-for gene clusters, adjusted for testing multiple hypotheses.
+GXNA adapts this in the context of the subgraph search algorithm to compute statistical significance
+(p-values) for gene clusters, adjusted for testing multiple hypotheses.
 
 This is made possible by the efficient implementation of the subgraph search. In a typical run on human data
 searching for clusters of 20 genes with 5,000 roots and 1,000 permutations,
@@ -57,13 +59,16 @@ the algorithm needs to perform 5,000,000 searches and completes in less than 10 
 
 # Installation
 
-Download the code with `git clone https://github.com/serbannacu/gxna.git` (or via the web interface) and run `make` inside the
-repo directory to build the binary `bin/gxna`.
+Download the code with `git clone https://github.com/serbannacu/gxna.git` (or via the web interface).
+Inside the repo directory, run `cmake -S . -B build` followed by `cmake --build build`.
+This will build the binary `build/gxna`.
 
+If `cmake` is not available on your system, you can also try to build with
+`make -f makefile.unix`. This should work on Unix-like systems like Linux and MacOS.
 Make sure `gcc` is installed and it supports C++17.
-The build was tested on Linux and MacOS. 
 
-GXNA uses [Graphviz](https://www.graphviz.org) to draw graphs. Run `neato -V` to check if it is already installed on your system.
+GXNA uses [Graphviz](https://www.graphviz.org) to draw graphs.
+Run `neato -V` to check if it is already installed on your system.
 If not, install it or GXNA will only be able to produce text output.
 
 # Quick Start
@@ -87,7 +92,7 @@ Phenotypes can be any string.
 
 First, run
 ```
-bin/gxna -name test -probeFile human1av2.ann
+build/gxna -name test -probeFile human1av2.ann
 ```
 Both parameters are required. They tell the program to read experiment data from `test.phe` and `test.exp`
 (simulated data included in the repo) and use the probe
@@ -105,7 +110,7 @@ Running the program with default parameters performs single-gene analysis, so al
 
 For something more interesting, run
 ```
-bin/gxna -name test -probeFile human1av2.ann -version 001 -algoType GXNA
+build/gxna -name test -probeFile human1av2.ann -version 001 -algoType GXNA
 ```
 The output files are now in `output/test/001/`.
 The `-algoType GXNA` parameter directs the program to perform an adapted search.
