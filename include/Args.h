@@ -16,6 +16,7 @@ struct Args {
     void parse(int argc, char *argv[]);
     void read(const std::string& filename, bool strict = true);
     void print(std::ostream&) const;
+    void usage(std::ostream&) const;
 
     // filenames
     std::string name;

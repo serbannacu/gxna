@@ -135,6 +135,32 @@ void Args::print(std::ostream& os) const {
     os << "maxOverlap " << maxOverlap << '\n';
     os << "draw " << draw << '\n';
 }
+
+static void log_option(std::ostream& os, const char *name, const char *arg, const char *description) {
+    os << "  -" << std::left
+       << std::setw(14) << name << ' '
+       << std::setw(8) << arg << "  "
+       << std::right << description << '\n';
+}
+
+void Args::usage(std::ostream& os) const {
+    os << "Usage: gxna [options]\n";
+    os << "\n";
+    os << "Options:\n";
+    log_option(os, "name", "string", "experiment name");
+    log_option(os, "version", "string", "output version");
+    log_option(os, "probeFile", "filename", "probe annotation file");
+    log_option(os, "algoType", "type", "Basic | GXNA");
+    log_option(os, "radius", "int", "ball radius for ball search");
+    log_option(os, "depth", "int", "max cluster size for adapted search");
+    log_option(os, "nPerms", "int", "number of permutations");
+    log_option(os, "invariantPerms", "bool", "use invariant permutations");
+    log_option(os, "shrink", "bool", "adjust scores via empirical Bayes shrinkage");
+    log_option(os, "seed", "int", "seed for random number generator");
+    log_option(os, "draw", "bool", "render graphs to SVG files (needs Graphviz)");
+    os << "\n";
+}
+
 void from_string(std::string& lhs, const std::string& rhs) {
     lhs = rhs;
 }
