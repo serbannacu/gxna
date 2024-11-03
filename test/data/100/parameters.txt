@@ -21,7 +21,7 @@ sumScore true
 sumSigned true
 scalingExponent 0.6
 maxTscaled false
-nPerms 100
+nPerms 1000
 invariantPerms false
 shrink false
 seed 5

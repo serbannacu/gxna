@@ -5,8 +5,8 @@ overlap = scale ;
 10153 [label = "TRAF1\n42.92" ] ; 
 7756 [label = "TRAF3\n-1.47" ] ; 
 7269 [label = "TNFSF13\n-0.95" ] ; 
-7269 -> 1066 [label = "B+" ]
 1066 -> 7756 [arrowhead = "none" ]
-1066 -> 10153 [arrowhead = "none" ]
+7269 -> 1066 [label = "B+" ]
 3165 -> 1066 [label = "B+" ]
+1066 -> 10153 [arrowhead = "none" ]
 }

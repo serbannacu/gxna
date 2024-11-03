@@ -13,8 +13,8 @@ overlap = scale ;
 12337 -> 7858 [arrowhead = "none" ]
 12337 -> 7524 [arrowhead = "none" ]
 9635 -> 10108 [label = "Bi" ]
-12337 -> 9635 [arrowhead = "none" ]
 9635 -> 9966 [label = "B+" ]
+12337 -> 9635 [arrowhead = "none" ]
 12337 -> 10108 [arrowhead = "none" ]
 12337 -> 9966 [arrowhead = "none" ]
 }
