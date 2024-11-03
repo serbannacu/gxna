@@ -20,7 +20,7 @@ add_executable(gxna
 )
 
 target_include_directories(gxna PUBLIC include)
-target_compile_options(gxna PRIVATE -Wall -Wextra -g -O3)
+target_compile_options(gxna PRIVATE -Wall -Wextra -O3)
 
 enable_testing()
 

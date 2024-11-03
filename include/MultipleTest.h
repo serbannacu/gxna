@@ -88,8 +88,8 @@ class MultipleTest {
         m_rank.resize(m_nObjects);
         for (int i = 0; i < m_nObjects; i++)
             m_rank[i] = i;
-        std::sort(m_rank.begin(), m_rank.end(),
-                  [&](int j, int k) { return score[j] > score[k]; });
+        std::stable_sort(m_rank.begin(), m_rank.end(),
+                         [&](int j, int k) { return score[j] > score[k]; });
     }
 
     void updateP(const std::vector<double>& score) {

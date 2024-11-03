@@ -86,7 +86,8 @@ void GeneNetwork::setScores(const std::vector<double>& score, double scalingExpo
     m_meanScore = ds.mean();
     m_scalingExponent = scalingExponent;
     for (auto& nodes : m_neighbors)  // sort neighbors by decreasing score
-        std::sort(nodes.begin(), nodes.end(), [&](size_t j, size_t k) { return m_score[j] > m_score[k]; });
+        std::stable_sort(nodes.begin(), nodes.end(),
+                         [&](size_t j, size_t k) { return m_score[j] > m_score[k]; });
 }
 
 double GeneNetwork::subgraphScore(const NodeList& subgraph) const {
