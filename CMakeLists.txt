@@ -21,3 +21,23 @@ add_executable(gxna
 
 target_include_directories(gxna PUBLIC include)
 target_compile_options(gxna PRIVATE -Wall -Wextra -g -O3)
+
+enable_testing()
+
+add_test(
+  NAME reg_solo
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND test/regression_test.sh 100 -algoType Basic -radius 0
+)
+
+add_test(
+  NAME reg_basic
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND test/regression_test.sh 101 -algoType Basic -radius 1
+)
+
+add_test(
+  NAME reg_gxna
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND test/regression_test.sh 102 -algoType GXNA -depth 15 -draw T
+)

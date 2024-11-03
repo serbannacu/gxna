@@ -16,11 +16,11 @@ output=output  # GXNA output directory
 name=test  # experiment name
 
 run_gxna() {
+    color $BLUE Test "$@"
     exec=build/gxna
     version=$1
     shift
-    args="-name $name -probeFile human1av2.ann -outputDir $output -nDetailed 10"
-    color $BLUE Test $exec $version "$@"
+    args="-name $name -probeFile human1av2.ann -outputDir $output -progress false -nDetailed 10"
     dir=$output/$name/$version
     rm -rf $dir
     mkdir -p $dir
@@ -36,17 +36,14 @@ run_diff() {
 
 fatal_error() {
     color $RED Failed test $1: $2
-    exit $?
+    exit 1
 }
 
 run_test() {
     version=$1
     run_gxna "$@" || fatal_error $version "GXNA failed exit status $?"
     run_diff $version || fatal_error $version "Found differences"
+    color $BLUE Success
 }
 
-run_test 100 -algoType Basic -radius 0
-run_test 101 -algoType Basic -radius 1
-run_test 102 -algoType GXNA -depth 15 -draw T
-
-color $BLUE Success
+run_test "$@"

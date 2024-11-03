@@ -29,3 +29,4 @@ nRows 250
 nDetailed 10
 maxOverlap 0.75
 draw true
+progress false

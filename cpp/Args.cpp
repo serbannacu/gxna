@@ -135,7 +135,7 @@ void Args::print(std::ostream& os) const {
     os << "nDetailed " << nDetailed << '\n';
     os << "maxOverlap " << maxOverlap << '\n';
     os << "draw " << draw << '\n';
-    os << "progress" << progress << '\n';
+    os << "progress " << progress << '\n';
 }
 
 static void log_option(std::ostream& os, const char *name, const char *arg, const char *description) {
