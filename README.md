@@ -125,18 +125,24 @@ and by default GXNA does not display clusters that overlap more than 75% with hi
 
 If Graphviz is installed, adding `-draw true` to the command line will render the top clusters into SVG files.
 If you refresh the browser, the right panel should now show drawings like
-[this](test/data/102/graph_0.svg) one.
+the image below.
+
+<img src="test/data/102/graph_7.svg" alt="Gene cluster"/>
+
 Each node displays the gene name and score, and each edge has the
 interaction [type](#interaction-types) and direction (if known).
 
 ## Output
 
-In the output directory, `parameters.txt` logs the program parameters, while `index.html` and `results.txt` contain the results.
-The latter has one line for each cluster/root, and after the regular columns (of which the $p$-values are the last ones)
-also shows the list of genes in the cluster.
+In the output directory, `parameters.txt` logs the program parameters, while
+`index.html` and `results.txt` contain the results.
+The latter has one line for each cluster/root, and after the regular columns
+(of which the $p$-values are the last ones) also shows the list of genes in the cluster.
 
-For each of the top clusters/subgraphs, GXNA also generates files `graph_N.{ext}` where *N* is the rank of the cluster, and the
-extension `{ext}` can be `txt`, `dot`, or `svg` (if `-draw` is enabled). DOT files are generated even if Graphviz is not installed,
+For each of the top clusters/subgraphs, GXNA also generates files `graph_N.{ext}`
+where *N* is the rank of the cluster, and the
+extension `{ext}` can be `txt`, `dot`, or `svg` (if `-draw` is enabled).
+DOT files are generated even if Graphviz is not installed,
 and can be used to create drawings later.
 
 ## Additional Notes
