@@ -124,7 +124,8 @@ You may notice there are gaps in the ranks of the top clusters. This is because 
 and by default GXNA does not display clusters that overlap more than 75% with higher scoring ones.
 
 If Graphviz is installed, adding `-draw true` to the command line will render the top clusters into SVG files.
-If you refresh the browser, the right panel should now show drawings.
+If you refresh the browser, the right panel should now show drawings like
+[this](test/data/102/graph_0.svg) one.
 Each node displays the gene name and score, and each edge has the
 interaction [type](#interaction-types) and direction (if known).
 
