@@ -31,6 +31,8 @@ class Permutation {
             m_v[i] = i;
     }
 
+    static void seed(int);
+    
     // Uniform random scramble obtained via element swaps
     void randomize(size_t start, size_t len);
 

@@ -117,6 +117,7 @@ void Experiment::run() {
     std::cout << "Testing " << m_testData.size() << " objects\n";
 
     MultipleTest<Experiment> mt(*this, m_testData.size());
+    Permutation::seed(args.seed);
     PermutationGenerator *pg;
     if (args.invariantPerms)
         pg = new InvariantPermutation(m_phenotype.nSamples(), args.nPerms,

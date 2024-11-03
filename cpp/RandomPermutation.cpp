@@ -4,13 +4,21 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <random>
 
 namespace gxna {
 
+static std::mt19937 mt;  // Mersenne Twister random number generator
+    
 inline int urand(int n) {  // uniform random between 0 and n-1
-    return (std::rand() / (((double) RAND_MAX) + 1)) * n;
+    static std::uniform_real_distribution<> dist(0.0, 1.0);
+    return dist(mt) * n;
 }
 
+void Permutation::seed(int val) {
+    mt.seed(val);
+}
+    
 void Permutation::randomize(size_t start, size_t len) {
     auto p = &m_v[start];
     for (size_t i = 1; i < len; ++i) {

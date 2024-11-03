@@ -18,8 +18,6 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "GXNA Version 3.0\n";
-    srand(args.seed);
-
     try {
         gxna::Experiment experiment(args);
         experiment.run();
