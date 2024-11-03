@@ -116,7 +116,18 @@ void Experiment::run() {
         }
     std::cout << "Testing " << m_testData.size() << " objects\n";
 
-    MultipleTest<Experiment> mt(*this, m_testData.size());
+    // Multiple roots can yield the same subgraph but with different node order.
+    // For example, if x, y and z are genes connected only to each other,
+    // they may generate the subgraphs {x, y, z}, {y, x, z} and {z, x, y}.
+    // The subgraphs should have the same score, but they may not, since
+    // floating point sums are not exactly associative due to rounding errors.
+
+    // This can cause inconsistent behavior across platforms.
+    // To prevent this, we provide a tolerance parameter to MultipleTest,
+    // small but expected to exceed the rounding error.
+
+    constexpr double Eps = 1e-9;
+    MultipleTest<Experiment> mt(*this, m_testData.size(), Eps);
     Permutation::seed(args.seed);
     PermutationGenerator *pg;
     if (args.invariantPerms)

@@ -18,14 +18,19 @@ namespace gxna {
 // statistics such as T.
 // The first permutation generated MUST be id.
 
+// In some use cases, floating point errors in score calculation can result in
+// inconsistent behavior across platforms. To prevent this, the ctor argument
+// eps can be set to a value that is small but exceeds the expected error.
+
 template<class ScoreCalculator>
 class MultipleTest {
  public:
-    MultipleTest(ScoreCalculator& calc, int nObjects) :
-        m_calc(calc),
-        m_nObjects(nObjects),
-        m_rawP(nObjects, 1.0),
-        m_adjP(nObjects, 1.0)
+    MultipleTest(ScoreCalculator& calc, int nObjects, double eps = 0)
+        : m_calc(calc),
+          m_nObjects(nObjects),
+          m_eps(eps),
+          m_rawP(nObjects, 1.0),
+          m_adjP(nObjects, 1.0)
     {}
 
     double getRawP(int i) const { return m_rawP[i]; }
@@ -89,7 +94,7 @@ class MultipleTest {
         for (int i = 0; i < m_nObjects; i++)
             m_rank[i] = i;
         std::stable_sort(m_rank.begin(), m_rank.end(),
-                         [&](int j, int k) { return score[j] > score[k]; });
+                         [&](int j, int k) { return score[j] > score[k] + m_eps; });
     }
 
     void updateP(const std::vector<double>& score) {
@@ -108,6 +113,7 @@ class MultipleTest {
 
     ScoreCalculator& m_calc;
     int m_nObjects;
+    double m_eps;
     std::vector<double> m_origT;
     std::vector<int> m_rank;
     std::vector<double> m_rawP;
