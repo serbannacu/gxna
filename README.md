@@ -3,7 +3,7 @@
 **GXNA (Gene eXpression Network Analysis)** is a method for analyzing gene expression data
 using interaction networks. Below is an informal guide to the algorithm and the software
 that implements it. For more background and technical details,
-see this [paper](https://serbannacu.github.io/gxna/bioinformatics.pdf).
+see this [paper](https://serbannacu.github.io/gxna/doc/bioinformatics.pdf).
 
 A standard goal of gene expression experiments is to find genes associated with a
 biological process or disease. Multiple samples are obtained, and gene expression
@@ -127,7 +127,7 @@ If Graphviz is installed, adding `-draw true` to the command line will render th
 If you refresh the browser, the right panel should now show drawings like
 the image below.
 
-<img src="test/data/102/graph_7.svg" alt="Gene cluster"/>
+<img src="doc/graph.svg" alt="Gene cluster"/>
 
 Each node displays the gene name and score, and each edge has the
 interaction [type](#interaction-types) and direction (if known).
