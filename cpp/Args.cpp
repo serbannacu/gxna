@@ -48,7 +48,8 @@ Args::Args()
       nRows(250),
       nDetailed(25),
       maxOverlap(0.75),
-      draw(false)
+      draw(false),
+      progress(true)
 {}
 
 void Args::check() {
@@ -134,6 +135,7 @@ void Args::print(std::ostream& os) const {
     os << "nDetailed " << nDetailed << '\n';
     os << "maxOverlap " << maxOverlap << '\n';
     os << "draw " << draw << '\n';
+    os << "progress" << progress << '\n';
 }
 
 static void log_option(std::ostream& os, const char *name, const char *arg, const char *description) {
@@ -273,6 +275,8 @@ bool Args::setImpl(const std::string& key, const std::string& val) {
         from_string(maxOverlap, val);
     else if (key == "draw")
         from_string(draw, val);
+    else if (key == "progress")
+        from_string(progress, val);
     else
         return false;
     return true;

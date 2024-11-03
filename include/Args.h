@@ -60,6 +60,7 @@ struct Args {
     int nDetailed;  // max number of graphs to write or draw details
     double maxOverlap;
     bool draw;  // use Graphviz to render graphs
+    bool progress;  // show progress indicator
 
  private:
     void setFilenames();

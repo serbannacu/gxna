@@ -123,7 +123,7 @@ void Experiment::run() {
                                       m_phenotypeInvariant.type());
     else
         pg = new UniformPermutation(m_phenotype.nSamples(), args.nPerms);
-    pg->setVerbose(true);
+    pg->setVerbose(args.progress);
     mt.test(*pg, args.maxTscaled);
     delete pg;
 
