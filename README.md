@@ -4,6 +4,7 @@
 using interaction networks. Below is an informal guide to the algorithm and the software
 that implements it. For more background and technical details,
 see this [paper](https://serbannacu.github.io/gxna/doc/bioinformatics.pdf).
+
 A standard goal of gene expression experiments is to find genes associated with a
 biological process or disease. Multiple samples are obtained, and gene expression
 for each sample is measured for a large number of genes using a high throughput technology
