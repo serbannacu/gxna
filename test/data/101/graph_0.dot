@@ -1,0 +1,9 @@
+digraph G {
+overlap = scale ;
+5740 [label = "TNFSF9\n4.23" ] ; 
+10153 [label = "TRAF1\n42.92" ] ; 
+11731 [label = "TNFRSF9\n4.48" ] ; 
+10153 -> 5740 [arrowhead = "none" ]
+5740 -> 11731 [label = "B+" ]
+11731 -> 10153 [arrowhead = "none" ]
+}

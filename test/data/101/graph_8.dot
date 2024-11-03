@@ -1,0 +1,19 @@
+digraph G {
+overlap = scale ;
+14981 [label = "PLN\n0.31" ] ; 
+9338 [label = "ATP2A1\n-0.76" ] ; 
+12337 [label = "ATP2A2\n70.13" ] ; 
+934 [label = "ATP2A3\n-1.32" ] ; 
+2267 [label = "SLN\n-0.55" ] ; 
+184 [label = "PRKACA\n0.75" ] ; 
+14625 [label = "PRKACB\n-1.40" ] ; 
+12232 [label = "PRKX\n-0.13" ] ; 
+14981 -> 9338 [label = "B-" ]
+14981 -> 12337 [label = "B-" ]
+14981 -> 934 [label = "B-" ]
+9338 -> 2267 [arrowhead = "none" ]
+14981 -> 2267 [arrowhead = "none" ]
+184 -> 14981 [label = "+p" ]
+14625 -> 14981 [label = "+p" ]
+12232 -> 14981 [label = "+p" ]
+}

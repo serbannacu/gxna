@@ -1,0 +1,4 @@
+digraph G {
+overlap = scale ;
+10153 [label = "TRAF1\n42.92" ] ; 
+}

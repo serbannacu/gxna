@@ -1,0 +1,33 @@
+digraph G {
+overlap = scale ;
+12902 [label = "TRIM38\n-6.35" ] ; 
+1579 [label = "RIPK1\n1.54" ] ; 
+10153 [label = "TRAF1\n42.92" ] ; 
+6731 [label = "TNFRSF8\n5.48" ] ; 
+1552 [label = "TNFRSF12A\n5.40" ] ; 
+11731 [label = "TNFRSF9\n4.48" ] ; 
+5740 [label = "TNFSF9\n4.23" ] ; 
+11826 [label = "TNFRSF18\n4.22" ] ; 
+1066 [label = "TNFRSF17\n3.50" ] ; 
+3165 [label = "TNFSF13B\n10.13" ] ; 
+14639 [label = "TNFRSF1B\n3.13" ] ; 
+12337 [label = "ATP2A2\n70.13" ] ; 
+7815 [label = "KCTD12\n4.45" ] ; 
+10273 [label = "STAT1\n4.19" ] ; 
+823 [label = "NMI\n21.59" ] ; 
+1579 -> 12902 [arrowhead = "none" ]
+10153 -> 1579 [arrowhead = "none" ]
+10153 -> 11826 [arrowhead = "none" ]
+14639 -> 10153 [arrowhead = "none" ]
+11731 -> 10153 [arrowhead = "none" ]
+6731 -> 10153 [arrowhead = "none" ]
+10153 -> 1552 [arrowhead = "none" ]
+10153 -> 5740 [arrowhead = "none" ]
+5740 -> 11731 [label = "B+" ]
+1066 -> 10153 [arrowhead = "none" ]
+3165 -> 1066 [label = "B+" ]
+12337 -> 14639 [arrowhead = "none" ]
+14639 -> 7815 [arrowhead = "none" ]
+10273 -> 14639 [arrowhead = "none" ]
+10273 -> 823 [arrowhead = "none" ]
+}

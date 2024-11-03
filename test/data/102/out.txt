@@ -1,0 +1,8 @@
+GXNA Version 3.0
+Read 10 samples and 2 types from expdata/test.phe: 0 1 
+Read 17323 probes and 15325 genes from refdata/human1av2.ann
+Read 15296 gene names from refdata/geneID2name
+Read 18178 expressions for 15325 genes from expdata/test.exp
+Read 33819 interactions from refdata/human.gra
+Testing 7263 objects
+Writing HTML to output/test/102/index.html
