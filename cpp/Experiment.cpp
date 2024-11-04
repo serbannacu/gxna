@@ -148,7 +148,7 @@ void Experiment::run() {
 static double computeScore(const std::vector<double>& expression,
                            const std::vector<int>& phenotype, int nPhenotypes) {
     if (nPhenotypes > 2) {  // F statistic
-        double f = fstat(&expression[0], phenotype, nPhenotypes);
+        double f = fstatPheno(&expression[0], phenotype, nPhenotypes);
         return zfCDF(f, nPhenotypes - 1, phenotype.size() - nPhenotypes);
     }
     else {  // T statistic; may want to convert to z-score

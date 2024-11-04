@@ -85,21 +85,32 @@ class FastDataSet {
     double m_xx = 0;  // sum of squared elements
 };
 
-// T statistic between two data sets
+// t and F statistics
 double tstat(const FastDataSet&, const FastDataSet&);  // unequal variances (Welch)
 double tstatEqual(const FastDataSet&, const FastDataSet&);  // equal variances (Student)
+double fstat(const std::vector<FastDataSet>&);
 
-// T statistic for a vector with associated phenotypes
+// t and F statistics for an array with associated phenotypes
+
 // phenotypes 0 and 1 define the two data sets, everything else is ignored
 double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, int pheno1);
 
-// F statistic for an array with associated phenotypes
 // phenotypes are required to be integers btwn 0 and nPheno - 1
-double fstat(const double *x, const std::vector<int>& pheno, const int nPheno);
+double fstatPheno(const double *x, const std::vector<int>& pheno, const int nPheno);
+
+
+// Special functions used in empirical Bayes calculations
+// All expect x > 0
+
+double harmonic(int n);  // approximate sum(1 / k) from 1 to n
+double harmonic2(int n);  // approximate sum(1 / k^2) from 1 to n
+double digamma(double x);
+double trigamma(double x);
 
 // Empirical Bayes shrinkage based on the following paper:
 // Gordon Smyth (2004), Linear models and empirical Bayes methods
 // for assessing differential expression in microarray experiments
+
 class EmpiricalBayes {
  public:
     // df is data degrees of freedom

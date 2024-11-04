@@ -32,6 +32,20 @@ double tstatEqual(const FastDataSet& d1, const FastDataSet& d2) {
     return safe_div_sqrt(d2.mean() - d1.mean(), val);
 }
 
+double fstat(const std::vector<FastDataSet>& v_data) {
+    double rss = 0;
+    FastDataSet all;
+    for (auto& data : v_data) {
+        all += data;
+        rss += data.rss();
+    }
+    auto n = v_data.size();
+    if (rss > 0 && n > 1)
+        return (all.rss() / rss - 1) * (all.size() - n) / (n - 1);
+    else
+        return 0;  // not quite correct, but will prevent overflow
+}
+    
 double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, int pheno1) {
     FastDataSet ds0, ds1;
     for (auto p : pheno) {
@@ -44,28 +58,15 @@ double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, in
     return tstat(ds0, ds1);
 }
 
-double fstat(const double *x, const std::vector<int>& pheno, const int nPheno) {
-    std::vector<FastDataSet> v_data(nPheno);  // stores stats for each phenotype
+double fstatPheno(const double *x, const std::vector<int>& pheno, const int nPheno) {
+    std::vector<FastDataSet> v_data(nPheno);
     for (auto p : pheno)
         v_data[p].insert(*x++);
-    double rss = 0;
-    FastDataSet all;
-    for (auto& data : v_data) {
-        all += data;
-        rss += data.rss();
-    }
-    if (rss > 0 && nPheno > 1)
-        return (all.rss() / rss - 1) * (pheno.size() - nPheno) / (nPheno - 1);
-    else
-        return 0;  // not quite correct, but will prevent overflow
+    return fstat(v_data);
 }
 
-// Special functions used in empirical Bayes calculations
-// All expect x > 0
-
-// Approximate sum(1 / k) from 1 to n
 [[maybe_unused]]
-static double harmonic(int n) {
+double harmonic(int n) {
     constexpr double Gamma = 0.577215664901532;  // Euler's constant
     double inv = 1.0 / n;
     double inv2 = inv * inv;
@@ -73,9 +74,8 @@ static double harmonic(int n) {
     return std::log(n) + Gamma + 0.5 * inv - inv2 / 12 + inv4 / 120;
 }
 
-// Approximate sum(1 / k^2) from 1 to n
 [[maybe_unused]]
-static double harmonic2(int n) {
+double harmonic2(int n) {
     constexpr double Zeta2 = 1.644934066848226;  // PI ^ 2 / 6
     double inv = 1.0 / n;
     double inv2 = inv * inv;
@@ -83,7 +83,7 @@ static double harmonic2(int n) {
     return Zeta2 - inv + 0.5 * inv2 - inv3 / 6;
 }
 
-static double digamma(double x) {
+double digamma(double x) {
     double sum = 0;
     while (x < 20)
         sum += 1 / x++;
@@ -94,7 +94,7 @@ static double digamma(double x) {
     return val - sum;
 }
 
-static double trigamma(double x) {
+double trigamma(double x) {
     double sum = 0;
     while (x < 20) {
         sum += 1 / (x * x);
