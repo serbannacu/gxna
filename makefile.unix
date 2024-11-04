@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -std=c++17 -Wall -W -MMD -O3
 LDFLAGS =
 
-SOURCES = Args.cpp Distribution.cpp Statistics.cpp RandomPermutation.cpp GeneNetwork.cpp Experiment.cpp gxna.cpp
+SOURCES = Args.cpp Distribution.cpp Experiment.cpp GeneNetwork.cpp RandomPermutation.cpp Statistics.cpp gxna.cpp
 DEPENDS = $(addprefix build/, $(SOURCES:.cpp=.d))
 OBJS = $(addprefix build/, $(SOURCES:.cpp=.o))
 
