@@ -9,6 +9,9 @@ project(gxna
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_compile_options(-Wall -Wextra)
+include_directories(include)
+
 add_executable(gxna
   cpp/gxna.cpp
   cpp/Args.cpp
@@ -19,8 +22,17 @@ add_executable(gxna
   cpp/Statistics.cpp
 )
 
-target_include_directories(gxna PUBLIC include)
-target_compile_options(gxna PRIVATE -Wall -Wextra -O3)
+target_compile_options(gxna PRIVATE -O3)
+
+add_executable(test_distribution
+  test/test_distribution.cpp
+  cpp/Distribution.cpp
+)
+
+add_executable(test_statistics
+  test/test_statistics.cpp
+  cpp/Statistics.cpp
+)
 
 enable_testing()
 
@@ -40,4 +52,14 @@ add_test(
   NAME reg_gxna
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMAND test/regression_test.sh 102 -algoType GXNA -depth 15 -draw T
+)
+
+add_test(
+  NAME unit_dist
+  COMMAND test_distribution
+)
+
+add_test(
+  NAME unit_stat
+  COMMAND test_statistics
 )
