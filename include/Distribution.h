@@ -9,6 +9,9 @@ namespace gxna {
 //     distCDFInv(x) gives the quantile corresponding to x
 //     zdistCDF(x) is x converted into an equivalent gaussian
 
+double betainc(double a, double b, double x); // incomplete beta function
+double erfinv(double x); // inverse error function
+
 // Normal distribution
 double normCDF(double x);
 double normCDFInv(double x);

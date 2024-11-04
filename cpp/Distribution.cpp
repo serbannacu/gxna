@@ -55,7 +55,7 @@ static double betaLentz(double a, double b, double x) {
 
 // Incomplete beta function
 // Needs 0 < a, 0 < b, 0 <= x <= 1
-static double betaInc(double a, double b, double x) {
+double betainc(double a, double b, double x) {
     if (x == 0)
         return 0;
     if (x == 1)
@@ -94,11 +94,11 @@ double normCDFInv(double x) {
 }
 
 double tCDF(double x, double n) {
-    return 1 - 0.5 * betaInc(n / 2, 0.5, n / (n + x * x));
+    return 1 - 0.5 * betainc(n / 2, 0.5, n / (n + x * x));
 }
 
 double fCDF(double x, double n1, double n2) {
-    return 1 - betaInc(n2 / 2, n1 / 2, n2 / (n2 + n1 * x));
+    return 1 - betainc(n2 / 2, n1 / 2, n2 / (n2 + n1 * x));
 }
 
 // Normal equivalent to F statistic, avoids overflow
@@ -106,7 +106,7 @@ double fCDF(double x, double n1, double n2) {
 // Needs x >= 0
 double zfCDF(double x, double n1, double n2) {
     double y = n2 / (n2 + n1 * x);
-    double bInc = betaInc(n2 / 2, n1 / 2, y);
+    double bInc = betainc(n2 / 2, n1 / 2, y);
     return SQRT2 * erfinv(bInc / 2);
 }
 
