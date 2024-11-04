@@ -1,13 +1,13 @@
 digraph G {
 overlap = scale ;
-14981 [label = "PLN\n0.31" ] ; 
-9338 [label = "ATP2A1\n-0.76" ] ; 
-12337 [label = "ATP2A2\n70.13" ] ; 
-934 [label = "ATP2A3\n-1.32" ] ; 
-2267 [label = "SLN\n-0.55" ] ; 
-184 [label = "PRKACA\n0.75" ] ; 
-14625 [label = "PRKACB\n-1.40" ] ; 
-12232 [label = "PRKX\n-0.13" ] ; 
+14981 [label = "PLN\n0.28" ] ; 
+9338 [label = "ATP2A1\n-0.68" ] ; 
+12337 [label = "ATP2A2\n62.73" ] ; 
+934 [label = "ATP2A3\n-1.18" ] ; 
+2267 [label = "SLN\n-0.49" ] ; 
+184 [label = "PRKACA\n0.67" ] ; 
+14625 [label = "PRKACB\n-1.25" ] ; 
+12232 [label = "PRKX\n-0.12" ] ; 
 14981 -> 9338 [label = "B-" ]
 14981 -> 12337 [label = "B-" ]
 14981 -> 934 [label = "B-" ]

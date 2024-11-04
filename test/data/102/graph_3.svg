@@ -14,14 +14,14 @@
 <title>1579</title>
 <ellipse fill="none" stroke="black" cx="158.97" cy="-189.78" rx="37.83" ry="28.99"/>
 <text text-anchor="middle" x="158.97" y="-192.98" font-family="Times,serif" font-size="14.00">RIPK1</text>
-<text text-anchor="middle" x="158.97" y="-176.48" font-family="Times,serif" font-size="14.00">1.54</text>
+<text text-anchor="middle" x="158.97" y="-176.48" font-family="Times,serif" font-size="14.00">1.38</text>
 </g>
 <!-- 12902 -->
 <g id="node3" class="node">
 <title>12902</title>
 <ellipse fill="none" stroke="black" cx="45.25" cy="-132.56" rx="45.25" ry="28.99"/>
 <text text-anchor="middle" x="45.25" y="-135.76" font-family="Times,serif" font-size="14.00">TRIM38</text>
-<text text-anchor="middle" x="45.25" y="-119.26" font-family="Times,serif" font-size="14.00">&#45;6.35</text>
+<text text-anchor="middle" x="45.25" y="-119.26" font-family="Times,serif" font-size="14.00">&#45;5.68</text>
 </g>
 <!-- 1579&#45;&gt;12902 -->
 <g id="edge2" class="edge">
@@ -33,7 +33,7 @@
 <title>10153</title>
 <ellipse fill="none" stroke="black" cx="294.73" cy="-271.79" rx="40.48" ry="28.99"/>
 <text text-anchor="middle" x="294.73" y="-274.99" font-family="Times,serif" font-size="14.00">TRAF1</text>
-<text text-anchor="middle" x="294.73" y="-258.49" font-family="Times,serif" font-size="14.00">42.92</text>
+<text text-anchor="middle" x="294.73" y="-258.49" font-family="Times,serif" font-size="14.00">38.39</text>
 </g>
 <!-- 10153&#45;&gt;1579 -->
 <g id="edge1" class="edge">
@@ -45,7 +45,7 @@
 <title>1552</title>
 <ellipse fill="none" stroke="black" cx="414.34" cy="-297" rx="62.76" ry="28.99"/>
 <text text-anchor="middle" x="414.34" y="-300.2" font-family="Times,serif" font-size="14.00">TNFRSF12A</text>
-<text text-anchor="middle" x="414.34" y="-283.7" font-family="Times,serif" font-size="14.00">5.40</text>
+<text text-anchor="middle" x="414.34" y="-283.7" font-family="Times,serif" font-size="14.00">4.83</text>
 </g>
 <!-- 10153&#45;&gt;1552 -->
 <g id="edge7" class="edge">
@@ -57,7 +57,7 @@
 <title>5740</title>
 <ellipse fill="none" stroke="black" cx="249.53" cy="-171.6" rx="44.72" ry="28.99"/>
 <text text-anchor="middle" x="249.53" y="-174.8" font-family="Times,serif" font-size="14.00">TNFSF9</text>
-<text text-anchor="middle" x="249.53" y="-158.3" font-family="Times,serif" font-size="14.00">4.23</text>
+<text text-anchor="middle" x="249.53" y="-158.3" font-family="Times,serif" font-size="14.00">3.79</text>
 </g>
 <!-- 10153&#45;&gt;5740 -->
 <g id="edge8" class="edge">
@@ -69,7 +69,7 @@
 <title>11826</title>
 <ellipse fill="none" stroke="black" cx="414.99" cy="-219.38" rx="55.86" ry="28.99"/>
 <text text-anchor="middle" x="414.99" y="-222.58" font-family="Times,serif" font-size="14.00">TNFRSF18</text>
-<text text-anchor="middle" x="414.99" y="-206.08" font-family="Times,serif" font-size="14.00">4.22</text>
+<text text-anchor="middle" x="414.99" y="-206.08" font-family="Times,serif" font-size="14.00">3.78</text>
 </g>
 <!-- 10153&#45;&gt;11826 -->
 <g id="edge4" class="edge">
@@ -81,7 +81,7 @@
 <title>6731</title>
 <ellipse fill="none" stroke="black" cx="186.87" cy="-350.99" rx="51.09" ry="28.99"/>
 <text text-anchor="middle" x="186.87" y="-354.19" font-family="Times,serif" font-size="14.00">TNFRSF8</text>
-<text text-anchor="middle" x="186.87" y="-337.69" font-family="Times,serif" font-size="14.00">5.48</text>
+<text text-anchor="middle" x="186.87" y="-337.69" font-family="Times,serif" font-size="14.00">4.90</text>
 </g>
 <!-- 6731&#45;&gt;10153 -->
 <g id="edge6" class="edge">
@@ -93,7 +93,7 @@
 <title>11731</title>
 <ellipse fill="none" stroke="black" cx="187.59" cy="-263.36" rx="51.09" ry="28.99"/>
 <text text-anchor="middle" x="187.59" y="-266.56" font-family="Times,serif" font-size="14.00">TNFRSF9</text>
-<text text-anchor="middle" x="187.59" y="-250.06" font-family="Times,serif" font-size="14.00">4.48</text>
+<text text-anchor="middle" x="187.59" y="-250.06" font-family="Times,serif" font-size="14.00">4.01</text>
 </g>
 <!-- 11731&#45;&gt;10153 -->
 <g id="edge5" class="edge">
@@ -112,7 +112,7 @@
 <title>1066</title>
 <ellipse fill="none" stroke="black" cx="358.16" cy="-136.36" rx="55.86" ry="28.99"/>
 <text text-anchor="middle" x="358.16" y="-139.56" font-family="Times,serif" font-size="14.00">TNFRSF17</text>
-<text text-anchor="middle" x="358.16" y="-123.06" font-family="Times,serif" font-size="14.00">3.50</text>
+<text text-anchor="middle" x="358.16" y="-123.06" font-family="Times,serif" font-size="14.00">3.13</text>
 </g>
 <!-- 1066&#45;&gt;10153 -->
 <g id="edge11" class="edge">
@@ -124,7 +124,7 @@
 <title>3165</title>
 <ellipse fill="none" stroke="black" cx="428.95" cy="-28.99" rx="55.86" ry="28.99"/>
 <text text-anchor="middle" x="428.95" y="-32.19" font-family="Times,serif" font-size="14.00">TNFSF13B</text>
-<text text-anchor="middle" x="428.95" y="-15.69" font-family="Times,serif" font-size="14.00">10.13</text>
+<text text-anchor="middle" x="428.95" y="-15.69" font-family="Times,serif" font-size="14.00">9.06</text>
 </g>
 <!-- 3165&#45;&gt;1066 -->
 <g id="edge10" class="edge">
@@ -138,7 +138,7 @@
 <title>14639</title>
 <ellipse fill="none" stroke="black" cx="326.25" cy="-418.22" rx="57.45" ry="28.99"/>
 <text text-anchor="middle" x="326.25" y="-421.42" font-family="Times,serif" font-size="14.00">TNFRSF1B</text>
-<text text-anchor="middle" x="326.25" y="-404.92" font-family="Times,serif" font-size="14.00">3.13</text>
+<text text-anchor="middle" x="326.25" y="-404.92" font-family="Times,serif" font-size="14.00">2.80</text>
 </g>
 <!-- 14639&#45;&gt;10153 -->
 <g id="edge3" class="edge">
@@ -150,7 +150,7 @@
 <title>7815</title>
 <ellipse fill="none" stroke="black" cx="462.86" cy="-448.68" rx="46.85" ry="28.99"/>
 <text text-anchor="middle" x="462.86" y="-451.88" font-family="Times,serif" font-size="14.00">KCTD12</text>
-<text text-anchor="middle" x="462.86" y="-435.38" font-family="Times,serif" font-size="14.00">4.45</text>
+<text text-anchor="middle" x="462.86" y="-435.38" font-family="Times,serif" font-size="14.00">3.98</text>
 </g>
 <!-- 14639&#45;&gt;7815 -->
 <g id="edge13" class="edge">
@@ -162,7 +162,7 @@
 <title>12337</title>
 <ellipse fill="none" stroke="black" cx="218.48" cy="-507.28" rx="44.72" ry="28.99"/>
 <text text-anchor="middle" x="218.48" y="-510.48" font-family="Times,serif" font-size="14.00">ATP2A2</text>
-<text text-anchor="middle" x="218.48" y="-493.98" font-family="Times,serif" font-size="14.00">70.13</text>
+<text text-anchor="middle" x="218.48" y="-493.98" font-family="Times,serif" font-size="14.00">62.73</text>
 </g>
 <!-- 12337&#45;&gt;14639 -->
 <g id="edge12" class="edge">
@@ -174,7 +174,7 @@
 <title>10273</title>
 <ellipse fill="none" stroke="black" cx="356.76" cy="-545.21" rx="38.89" ry="28.99"/>
 <text text-anchor="middle" x="356.76" y="-548.41" font-family="Times,serif" font-size="14.00">STAT1</text>
-<text text-anchor="middle" x="356.76" y="-531.91" font-family="Times,serif" font-size="14.00">4.19</text>
+<text text-anchor="middle" x="356.76" y="-531.91" font-family="Times,serif" font-size="14.00">3.75</text>
 </g>
 <!-- 10273&#45;&gt;14639 -->
 <g id="edge14" class="edge">
@@ -186,7 +186,7 @@
 <title>823</title>
 <ellipse fill="none" stroke="black" cx="385.03" cy="-665.55" rx="33.06" ry="28.99"/>
 <text text-anchor="middle" x="385.03" y="-668.75" font-family="Times,serif" font-size="14.00">NMI</text>
-<text text-anchor="middle" x="385.03" y="-652.25" font-family="Times,serif" font-size="14.00">21.59</text>
+<text text-anchor="middle" x="385.03" y="-652.25" font-family="Times,serif" font-size="14.00">19.31</text>
 </g>
 <!-- 10273&#45;&gt;823 -->
 <g id="edge15" class="edge">
