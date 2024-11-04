@@ -3,27 +3,33 @@
 
 namespace gxna {
 
-double tstat(const FastDataSet& ds0, const FastDataSet& ds1) {
-    if (ds0.n < 2 || ds1.n < 2)
+static double safe_div_sqrt(double x, double y) {
+    if (y > 0)
+        return x / std::sqrt(y);
+    else
         return 0;
-
-    double mu0 = ds0.sumx / ds0.n;
-    double mu1 = ds1.sumx / ds1.n;
-    double vardiff = (ds1.sumxx / ds1.n - mu1 * mu1) / ds1.n
-        + (ds0.sumxx / ds0.n - mu0 * mu0) / ds0.n;
-    return vardiff > 0 ? (mu1 - mu0) / sqrt(vardiff) : 0;
 }
 
-double tstatEqual(const FastDataSet& ds0, const FastDataSet& ds1) {
-    if (ds0.n < 1 || ds1.n < 1)
+double tstat(const FastDataSet& d1, const FastDataSet& d2) {
+    int n1 = d1.size();
+    int n2 = d2.size();
+    if (n1 < 2 || n2 < 2)
         return 0;
+    double mean1, mean2, var1, var2;
+    d1.meanVar(mean1, var1);
+    d2.meanVar(mean2, var2);
+    double val = var1 / (n1 - 1) + var2 / (n2 - 1);
+    return safe_div_sqrt(mean2 - mean1, val);
+}
 
-    double mu0 = ds0.sumx / ds0.n;
-    double mu1 = ds1.sumx / ds1.n;
-    int n = ds0.n + ds1.n;
-    double mu = (ds0.sumx + ds1.sumx) / n;
-    double var = ((ds0.sumxx + ds1.sumxx) / n - mu * mu) / n;
-    return var > 0 ? (mu1 - mu0) / sqrt(var) : 0;
+double tstatEqual(const FastDataSet& d1, const FastDataSet& d2) {
+    int n1 = d1.size();
+    int n2 = d2.size();
+    int n = n1 + n2;
+    if (n1 == 0 || n2 == 0 || n == 2)
+        return 0;
+    double val = (d1.rss() + d2.rss()) / (n - 2) * (1.0 / n1 + 1.0 / n2);
+    return safe_div_sqrt(d2.mean() - d1.mean(), val);
 }
 
 double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, int pheno1) {
@@ -42,17 +48,14 @@ double fstat(const double *x, const std::vector<int>& pheno, const int nPheno) {
     std::vector<FastDataSet> v_data(nPheno);  // stores stats for each phenotype
     for (auto p : pheno)
         v_data[p].insert(*x++);
-    double sum = 0, sumsq = 0, sumrss = 0;
+    double rss = 0;
+    FastDataSet all;
     for (auto& data : v_data) {
-        sum += data.sumx;
-        sumsq += data.sumxx;
-        if (data.n > 1)
-            sumrss += (data.sumxx - data.sumx * data.sumx / data.n);
+        all += data;
+        rss += data.rss();
     }
-    double rssnull = sumsq - sum * sum / pheno.size();
-    double rssdiff = rssnull - sumrss;
-    if (sumrss > 0 && nPheno > 1)
-        return rssdiff / (nPheno - 1) / sumrss * (pheno.size() - nPheno);
+    if (rss > 0 && nPheno > 1)
+        return (all.rss() / rss - 1) * (pheno.size() - nPheno) / (nPheno - 1);
     else
         return 0;  // not quite correct, but will prevent overflow
 }
@@ -119,11 +122,11 @@ void EmpiricalBayes::estimate(double logVarMean, double logVarVar, int nGenes, i
     double val = logVarMean - digamma(df / 2);
     if (y > 0) {
         m_df = 2 * trigammainv(y);
-        m_var = std::exp(val + digamma(m_df / 2) + log(df / m_df));
+        m_var = std::exp(val + digamma(m_df / 2) + std::log(df / m_df));
     }
     else {
         m_df = 100 * df;  // just need something large
-        m_var = std::exp(val + log(df / 2));
+        m_var = std::exp(val + std::log(df / 2));
     }
     m_ratio = m_df / df;
 }

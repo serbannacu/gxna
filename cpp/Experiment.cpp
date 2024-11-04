@@ -202,7 +202,7 @@ void Experiment::setShrinkageFactor() {
     FastDataSet logVar;
     for (auto& data : m_gene)
         if (data.sd > 0)  // constant probes are likely bad so we ignore them
-            logVar.insert(2 * log(data.sd));
+            logVar.insert(2 * std::log(data.sd));
     EmpiricalBayes eb;
     eb.estimate(logVar.mean(), logVar.var(), m_gene.size(),
                 m_phenotype.nSamples() - m_phenotype.nTypes());
