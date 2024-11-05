@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_compile_options(-Wall -Wextra)
 include_directories(include)
 
+# Main target
+
 add_executable(gxna
   cpp/gxna.cpp
   cpp/Args.cpp
@@ -24,6 +26,8 @@ add_executable(gxna
 
 target_compile_options(gxna PRIVATE -O3)
 
+# Test targets
+
 add_executable(test_distribution
   test/test_distribution.cpp
   cpp/Distribution.cpp
@@ -34,7 +38,14 @@ add_executable(test_statistics
   cpp/Statistics.cpp
 )
 
+find_package(GTest REQUIRED)
+
+target_link_libraries(test_distribution GTest::gtest GTest::gtest_main)
+target_link_libraries(test_statistics GTest::gtest GTest::gtest_main)
+
 enable_testing()
+
+# Regression tests
 
 add_test(
   NAME reg_solo
@@ -54,12 +65,8 @@ add_test(
   COMMAND test/regression_test.sh 102 -algoType GXNA -depth 15 -draw T
 )
 
-add_test(
-  NAME unit_dist
-  COMMAND test_distribution
-)
+# Unit tests
 
-add_test(
-  NAME unit_stat
-  COMMAND test_statistics
-)
+include(GoogleTest)
+gtest_discover_tests(test_distribution)
+gtest_discover_tests(test_statistics)
