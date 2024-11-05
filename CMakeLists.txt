@@ -26,24 +26,22 @@ add_executable(gxna
 
 target_compile_options(gxna PRIVATE -O3)
 
-# Test targets
-
-add_executable(test_distribution
-  test/test_distribution.cpp
-  cpp/Distribution.cpp
-)
-
-add_executable(test_statistics
-  test/test_statistics.cpp
-  cpp/Statistics.cpp
-)
-
-find_package(GTest REQUIRED)
-
-target_link_libraries(test_distribution GTest::gtest GTest::gtest_main)
-target_link_libraries(test_statistics GTest::gtest GTest::gtest_main)
+# Unit tests
 
 enable_testing()
+find_package(GTest)
+
+if(GTest_FOUND)
+  add_executable(test_distribution test/test_distribution.cpp cpp/Distribution.cpp)
+  add_executable(test_statistics test/test_statistics.cpp cpp/Statistics.cpp)
+
+  target_link_libraries(test_distribution GTest::gtest GTest::gtest_main)
+  target_link_libraries(test_statistics GTest::gtest GTest::gtest_main)
+
+  include(GoogleTest)
+  gtest_discover_tests(test_distribution)
+  gtest_discover_tests(test_statistics)
+endif()
 
 # Regression tests
 
@@ -64,9 +62,3 @@ add_test(
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMAND test/regression_test.sh 102 -algoType GXNA -depth 15 -draw T
 )
-
-# Unit tests
-
-include(GoogleTest)
-gtest_discover_tests(test_distribution)
-gtest_discover_tests(test_statistics)
