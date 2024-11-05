@@ -33,7 +33,7 @@ inline double updateCD(double& frac, double& c, double& d, double coeff) {
 // Compute continuous fraction
 static double betaLentz(double a, double b, double x) {
     constexpr int MaxIterations = 500;
-    constexpr double MaxError = 1e-8;
+    constexpr double MaxError = 1e-10;
     double sum = a + b;
     double q = a;
     double c = 1;
@@ -53,8 +53,6 @@ static double betaLentz(double a, double b, double x) {
     return frac;
 }
 
-// Incomplete beta function
-// Needs 0 < a, 0 < b, 0 <= x <= 1
 double betainc(double a, double b, double x) {
     if (x == 0)
         return 0;
@@ -69,52 +67,55 @@ double betainc(double a, double b, double x) {
         return 1 - val * betaLentz(b, a, 1 - x) / b;
 }
 
-// Inverse error function
-// Overflows within 10^-10 or so of 0 and 1
-// Max error has order 10^-3
-double erfinv(double x) {
+double zCDF(double z) {
+    return zSF(-z);
+}
+
+// zSF(38) = 2.9e-316, zSF(39) = 0
+double zSF(double z) {
+    constexpr double SQRT2INV = 0.7071067811865475;  // 1 / sqrt(2)
+    return 0.5 * std::erfc(z * SQRT2INV);
+}
+
+double tCDF(double t, double n) {
+    double val = 0.5 * betainc(n / 2, 0.5, n / (n + t * t));
+    return t < 0 ? val : 1 - val;
+}
+
+double tSF(double t, double n) {
+    double val = 0.5 * betainc(n / 2, 0.5, n / (n + t * t));
+    return t < 0 ? 1 - val : val;
+}
+
+double fCDF(double f, double n1, double n2) {
+    double x = n2 / (n2 + n1 * f);
+    return 1 - betainc(n2 / 2, n1 / 2, x);
+}
+
+double fSF(double f, double n1, double n2) {
+    double x = n2 / (n2 + n1 * f);
+    return betainc(n2 / 2, n1 / 2, x);
+}
+
+double t2z(double t, double n) {
+    auto z = f2z(t * t, 1, n);
+    return t >= 0 ? z : -z;
+}
+
+double f2z(double f, double n1, double n2) {
+    return -zCDFinv(0.5 * fSF(f, n1, n2));
+}
+
+// Fast error function inverse uses Winitzki's approximation
+double zCDFinv(double y) {
+    constexpr double Pi = 3.141592653589793;
     constexpr double A = 7.1422296;
-    constexpr double B = 4.546885;  // 2 * A / PI
-    double p = std::log(4.0 * x * (1-x));
+    constexpr double B = 2 * A / Pi;
+    double p = std::log(4.0 * y * (1 - y));
     double q = 0.5 * p + B;
-    return std::sqrt(std::sqrt(q * q - p * A) - q);
-}
-
-constexpr double SQRT2 = 1.414214;
-
-double normCDF(double x) {
-    constexpr double SQRT2INV = 0.7071067811865475;
-    return 1 - 0.5 * std::erfc(x * SQRT2INV);
-}
-
-// Computes quantiles for gaussian: f(0) = -Inf, f(1/2) = 0, f(1) = Inf
-double normCDFInv(double x) {
-    double val = SQRT2 * erfinv(x);
-    return x >= 0.5 ? val : -val;
-}
-
-double tCDF(double x, double n) {
-    return 1 - 0.5 * betainc(n / 2, 0.5, n / (n + x * x));
-}
-
-double fCDF(double x, double n1, double n2) {
-    return 1 - betainc(n2 / 2, n1 / 2, n2 / (n2 + n1 * x));
-}
-
-// Normal equivalent to F statistic, avoids overflow
-// Returns y with P(|normal| < y) = P(F < x)
-// Needs x >= 0
-double zfCDF(double x, double n1, double n2) {
-    double y = n2 / (n2 + n1 * x);
-    double bInc = betainc(n2 / 2, n1 / 2, y);
-    return SQRT2 * erfinv(bInc / 2);
-}
-
-// Normal equivalent to T statistic, avoids overflow
-// Returns y with P(|normal| < y) = P(T < x)
-// Needs x >= 0
-double ztCDF(double x, double n) {
-    return x >= 0 ? zfCDF(x * x, 1, n) : -zfCDF(x * x, 1, n);
+    double r = std::sqrt(q * q - p * A) - q;
+    double val = std::sqrt(2 * r);
+    return y >= 0.5 ? val : -val;
 }
 
 }  // namespace gxna
