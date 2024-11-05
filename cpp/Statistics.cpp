@@ -45,7 +45,7 @@ double fstat(const std::vector<FastDataSet>& v_data) {
     else
         return 0;  // not quite correct, but will prevent overflow
 }
-    
+
 double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, int pheno1) {
     FastDataSet ds0, ds1;
     for (auto p : pheno) {
@@ -76,12 +76,14 @@ double harmonic(int n) {
 
 [[maybe_unused]]
 double harmonic2(int n) {
-    constexpr double Zeta2 = 1.644934066848226;  // PI ^ 2 / 6
+    constexpr double Zeta2 = 1.6449340668482264;  // PI ^ 2 / 6
     double inv = 1.0 / n;
     double inv2 = inv * inv;
-    double inv3 = inv2 * inv;
-    return Zeta2 - inv + 0.5 * inv2 - inv3 / 6;
+    double inv4 = inv2 * inv2;
+    return Zeta2 - inv * (1 - 0.5 * inv + inv2 / 6 - inv4 / 30);
 }
+
+// Gamma special functions are not optimized, but the implementations are fast enough for our use case
 
 double digamma(double x) {
     double sum = 0;
@@ -107,12 +109,31 @@ double trigamma(double x) {
     return val + sum;
 }
 
-// This implementation has error up to 0.25
-// OK for EmpiricalBayes::estimate but can do better
-static double trigammainv(double x) {
-    double x1 = 1 / x + 0.5;
-    double x2 = 1 / (x + 1 / x1) - 0.5;
-    return (x1 + x2) / 2;
+// Trigammainv implementation uses bisection. Newton iteration would be faster.
+double trigammainv(double y) {
+    // Use asymptotics to avoid overflow or underflow
+    if (y < 1e-6)
+        return 1 / y + 0.5;
+    if (y > 1e6)
+        return 1 / std::sqrt(y);
+    double x = 0.5 + 1 / y;
+    double lo = x, hi = x;
+    while (trigamma(lo) < y)
+        lo /= 2;
+    while (trigamma(hi) > y)
+        hi *= 2;
+    constexpr double eps = 1e-6;
+    while (hi - lo > eps) {
+        x = 0.5 * (lo + hi);
+        double val = trigamma(x);
+        if (val == y)
+            break;
+        else if (val > y)
+            lo = x;
+        else
+            hi = x;
+    }
+    return 0.5 * (lo + hi);
 }
 
 void EmpiricalBayes::estimate(double logVarMean, double logVarVar, int nGenes, int df) {

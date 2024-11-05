@@ -81,7 +81,7 @@ class FastDataSet {
     }
 
     int m_n = 0;
-    double m_x = 0; // sum of elements
+    double m_x = 0;  // sum of elements
     double m_xx = 0;  // sum of squared elements
 };
 
@@ -106,6 +106,7 @@ double harmonic(int n);  // approximate sum(1 / k) from 1 to n
 double harmonic2(int n);  // approximate sum(1 / k^2) from 1 to n
 double digamma(double x);
 double trigamma(double x);
+double trigammainv(double x);
 
 // Empirical Bayes shrinkage based on the following paper:
 // Gordon Smyth (2004), Linear models and empirical Bayes methods
