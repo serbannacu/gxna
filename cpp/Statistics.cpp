@@ -1,13 +1,24 @@
 #include "Distribution.h"
 #include "Statistics.h"
 
+#include <limits>
+
 namespace gxna {
+
+using Limits = std::numeric_limits<double>;
+
+constexpr auto PlusInfinity = Limits::is_iec559 ? Limits::infinity() : Limits::max();
+constexpr auto MinusInfinity = Limits::is_iec559 ? -Limits::infinity() : Limits::min();
 
 static double safe_div_sqrt(double x, double y) {
     if (y > 0)
         return x / std::sqrt(y);
+    else if (x > 0)
+        return PlusInfinity;
+    else if (x < 0)
+        return MinusInfinity;
     else
-        return 0;
+        return 0;  // better than NAN for our use case
 }
 
 double tstat(const FastDataSet& d1, const FastDataSet& d2) {
@@ -40,10 +51,15 @@ double fstat(const std::vector<FastDataSet>& v_data) {
         rss += data.rss();
     }
     auto n = v_data.size();
-    if (rss > 0 && n > 1)
-        return (all.rss() / rss - 1) * (all.size() - n) / (n - 1);
+    int df = all.size() - n;
+    if (n > 1 && df > 0) {
+        if (rss > 0)
+            return (all.rss() / rss - 1) * df / (n - 1);
+        else
+            return all.rss() > 0 ? PlusInfinity : 0;
+    }
     else
-        return 0;  // not quite correct, but will prevent overflow
+        return 0;
 }
 
 double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, int pheno1) {
@@ -83,7 +99,7 @@ double harmonic2(int n) {
     return Zeta2 - inv * (1 - 0.5 * inv + inv2 / 6 - inv4 / 30);
 }
 
-// Gamma special functions are not optimized, but the implementations are fast enough for our use case
+// Gamma special functions are not optimized, but they are fast enough for our use case
 
 double digamma(double x) {
     double sum = 0;

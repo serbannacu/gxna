@@ -45,6 +45,28 @@ TEST_F(DataSetTest, TF) {
 
     EXPECT_DOUBLE_EQ(fstat({fa, fb}), 11.935792717030486);
     EXPECT_DOUBLE_EQ(fstat({fa, fb, fc}), 4.5688416461171313);
+
+    constexpr auto Inf = std::numeric_limits<double>::infinity();
+    
+    // t stat corner cases
+    EXPECT_EQ(tstat(fa, fa), 0);
+    EXPECT_EQ(tstat(fb, fb), 0);
+    FastDataSet ones {{1, 1, 1, 1}};
+    FastDataSet twos {{2, 2, 2, 2, 2, 2}};
+    EXPECT_EQ(tstat(ones, ones), 0);
+    EXPECT_EQ(tstat(twos, twos), 0);
+    EXPECT_EQ(tstat(ones, twos), Inf);
+    EXPECT_EQ(tstat(twos, ones), -Inf);
+    
+    // F stat corner cases
+    EXPECT_EQ(fstat({fa, fa}), 0);
+    EXPECT_EQ(fstat({fb, fb}), 0);
+    EXPECT_EQ(fstat({ones, ones}), 0);
+    EXPECT_EQ(fstat({twos, twos}), 0);
+    EXPECT_EQ(fstat({ones, twos}), Inf);
+    EXPECT_EQ(fstat({twos, ones}), Inf);
+
+    EXPECT_EQ(fstat({ FastDataSet({1}), FastDataSet({2}), FastDataSet({5}) }), 0);  // singletons
 }
 
 TEST(Gamma, Basic) {
