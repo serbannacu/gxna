@@ -8,7 +8,7 @@ namespace gxna {
 // Permutation of the integers {0, 1, 2, ..., n - 1}
 class Permutation {
  public:
-    Permutation(size_t n)
+    explicit Permutation(size_t n)
         : m_v(n) {
         init();
     }
@@ -32,7 +32,7 @@ class Permutation {
     }
 
     static void seed(int);
-    
+
     // Uniform random scramble obtained via element swaps
     void randomize(size_t start, size_t len);
 
@@ -46,7 +46,7 @@ class Permutation {
 
 class PermutationHistogram {
  public:
-    PermutationHistogram(size_t n) {
+    explicit PermutationHistogram(size_t n) {
         m_count.resize(n);
         for (auto& v : m_count)
             v.resize(n);

@@ -53,13 +53,13 @@ struct GeneData {
 
 class Experiment {
  public:
-    Experiment(Args&);
+    explicit Experiment(Args&);
     void run();
     std::vector<double> operator()(const Permutation& perm);  // used by MultipleTest
 
  private:
     size_t nSamples() const { return m_phenotype[0].nSamples(); }
-    
+
     // Computation
     double scoreNodeList(const GeneNetwork::NodeList& genes,
                          const std::vector<int>& pheno, int nLabels);

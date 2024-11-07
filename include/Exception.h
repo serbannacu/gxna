@@ -11,7 +11,7 @@ namespace gxna {
 
 class Exception : public std::exception {
  public:
-    Exception(const std::string& msg)
+    explicit Exception(const std::string& msg)
         : m_msg(msg)
     {}
 

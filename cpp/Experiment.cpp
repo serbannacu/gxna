@@ -22,7 +22,7 @@ void Phenotype::read(std::istream& is) {
     std::string label;
     while (is >> label) {
         if (label == m_name)
-            throw Exception("Phenotype") << ' ' << m_name << ": sample label cannot equal name";
+            throw Exception("Phenotype") << ' ' << m_name << ": sample label same as name";
         auto it = m_label2n.find(label);
         int i;
         if (it == m_label2n.end()) {
@@ -57,7 +57,7 @@ void Phenotype::filter(const std::vector<std::string>& v) {
     for (auto& label : v) {
         auto it = m_label2n.find(label);
         if (it == m_label2n.end())
-            throw Exception("Phenotype") << ' ' << m_name << ": unknown sample label " << label;
+            throw Exception("Phenotype") << ' ' << m_name << ": unknown label " << label;
         // should use it->second
     }
     throw Exception("Phenotype::filter not implemented");

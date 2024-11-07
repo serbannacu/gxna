@@ -9,7 +9,7 @@
 namespace gxna {
 
 static std::mt19937 mt;  // Mersenne Twister random number generator
-    
+
 inline int urand(int n) {  // uniform random between 0 and n-1
     static std::uniform_real_distribution<> dist(0.0, 1.0);
     return dist(mt) * n;
@@ -18,7 +18,7 @@ inline int urand(int n) {  // uniform random between 0 and n-1
 void Permutation::seed(int val) {
     mt.seed(val);
 }
-    
+
 void Permutation::randomize(size_t start, size_t len) {
     auto p = &m_v[start];
     for (size_t i = 1; i < len; ++i) {
@@ -57,7 +57,8 @@ void PermutationGenerator::showProgress() {
     }
 }
 
-InvariantPermutation::InvariantPermutation(size_t n, size_t limit, const std::vector<int>& types)
+InvariantPermutation::InvariantPermutation(size_t n, size_t limit,
+                                           const std::vector<int>& types)
     : PermutationGenerator(n, limit) {
     assert(n == types.size());
     int type = 0;
