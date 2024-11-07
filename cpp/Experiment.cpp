@@ -163,20 +163,33 @@ void Experiment::run() {
 
 static double computeScore(const std::vector<double>& expression,
                            const std::vector<int>& pheno, int nLabels) {
+    double score;
     if (nLabels > 2) {  // F statistic
         double f = fstatPheno(&expression[0], pheno, nLabels);
-        return f2z(f, nLabels - 1, pheno.size() - nLabels);
+        score = f2z(f, nLabels - 1, pheno.size() - nLabels);
     }
-    else {  // T statistic; may want to convert to z-score
+    else {  // t statistic; may want to convert to z-score
         double t = tstatPheno(&expression[0], pheno, 0, 1);  // pheno 0 vs 1
-        return t;
+        score = t;
     }
+
+    // The F and t statistics could in principle be infinite.
+    // This would cause problems when scaling and/or comparing scores.
+    // In real data, extremely large values are likely overly optimistic anyway.
+    // Therefore, we enforce a bound, larger than any realistic z-score.
+
+    constexpr double MaxScore = 35;
+    if (std::fabs(score) > MaxScore)
+        score = score < 0 ? -MaxScore : MaxScore;
+    return score;
 }
 
 std::vector<double> Experiment::operator()(const Permutation& perm) {
     // Recompute gene scores
+
     auto pheno = perm.apply(m_mainPhenotype.get());
     auto nLabels = m_mainPhenotype.nLabels();
+
     std::vector<double> geneScorePermAbs;
     for (auto& data : m_gene) {
         double score = computeScore(data.expression, pheno, nLabels);
@@ -185,17 +198,18 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
         data.scorePerm = score;
         if (!m_permCount)
             data.score = score;
-        geneScorePermAbs.emplace_back(fabs(score));
+        geneScorePermAbs.emplace_back(std::fabs(score));
     }
     m_geneNetwork.setScores(geneScorePermAbs, args.scalingExponent);
 
     // Recompute cluster scores
+
     std::vector<double> clusterScorePermAbs;
     clusterScorePermAbs.reserve(m_testData.size());
     if (args.algoType == AlgoType::Basic) {
         for (auto& testData : m_testData) {
             auto val = scoreNodeList(testData.cluster, pheno, nLabels);
-            clusterScorePermAbs.emplace_back(fabs(val));
+            clusterScorePermAbs.emplace_back(std::fabs(val));
             if (!m_permCount)
                 testData.score = val;
         }
@@ -204,7 +218,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
         GeneNetwork::NodeList cluster;
         for (auto& testData : m_testData) {
             auto val = m_geneNetwork.findSubgraph(testData.root, args.depth, args.flexSize, cluster);
-            clusterScorePermAbs.emplace_back(fabs(val));
+            clusterScorePermAbs.emplace_back(std::fabs(val));
             if (!m_permCount) {
                 testData.cluster = cluster;
                 testData.score = val;
