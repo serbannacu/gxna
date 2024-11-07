@@ -1,0 +1,35 @@
+digraph G {
+overlap = scale ;
+10388 [label = "PIK3CG\n1.71" ] ; 
+9286 [label = "JAK1\n3.35" ] ; 
+13661 [label = "AKT1\n3.16" ] ; 
+9180 [label = "MPL\n2.88" ] ; 
+6775 [label = "PHLPP\n2.65" ] ; 
+6826 [label = "CNTFR\n2.63" ] ; 
+1250 [label = "PIP5K1C\n2.58" ] ; 
+13192 [label = "PIK4CA\n2.60" ] ; 
+1519 [label = "CD7\n2.95" ] ; 
+15253 [label = "IL15RA\n2.57" ] ; 
+14326 [label = "CDKN1A\n2.34" ] ; 
+1651 [label = "CCND1\n3.78" ] ; 
+5584 [label = "ELK1\n2.77" ] ; 
+7060 [label = "MAPK11\n2.69" ] ; 
+4991 [label = "DUSP14\n2.86" ] ; 
+10388 -> 13661 [label = "+p" ]
+13661 -> 10388 [label = "Bc" ]
+9286 -> 10388 [label = "+p" ]
+15253 -> 9286 [label = "+p" ]
+13661 -> 14326 [label = "+p" ]
+9180 -> 9286 [label = "+p" ]
+13661 -> 6775 [arrowhead = "none" ]
+6826 -> 9286 [label = "+p" ]
+1250 -> 10388 [label = "E" ]
+10388 -> 1250 [label = "E" ]
+1250 -> 13192 [label = "E" ]
+13192 -> 1250 [label = "E" ]
+1519 -> 13192 [arrowhead = "none" ]
+5584 -> 1651 [label = "T+" ]
+1651 -> 14326 [arrowhead = "none" ]
+7060 -> 5584 [label = "+p" ]
+4991 -> 7060 [label = "-p" ]
+}

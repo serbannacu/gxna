@@ -58,7 +58,13 @@ add_test(
 )
 
 add_test(
-  NAME reg_gxna
+  NAME reg_gxna_t
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMAND test/regression_test.sh 102 -algoType GXNA -depth 15 -draw T
+)
+
+add_test(
+  NAME reg_gxna_f
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND test/regression_test.sh 103 -algoType GXNA -depth 15 -draw T -test group
 )
