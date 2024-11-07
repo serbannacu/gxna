@@ -18,7 +18,7 @@ struct Args {
     void print(std::ostream&) const;
     void usage(std::ostream&) const;
 
-    // filenames
+    // Filenames
     std::string name;
     std::string version;
     std::string refDir;  // reference data
@@ -29,10 +29,13 @@ struct Args {
     std::string probeFile;
     std::string expressionFile;
     std::string phenotypeFile;
-    std::string typeFile;
 
-    // Algorithm filter and search
-    std::vector<std::string> phenotypes;  // only use these phenotypes
+    // Algorithm phenotypes
+    std::string test;  // test this phenotype
+    std::string invariant;  // use this phenotype for invariant permutations
+    std::vector<std::string> filter;  // filter for these phenotype labels
+
+    // Algorithm parameters
     AlgoType algoType;
     int radius;  // ball size for Basic algo
     int depth;  // subgraph size for GXNA algo
@@ -49,7 +52,6 @@ struct Args {
     // Algorithm p-value calculations
     bool maxTscaled;
     int nPerms;
-    bool invariantPerms;
 
     // Algorithm other parameters
     bool shrink;  // adjust gene scores using empirical Bayes shrinkage

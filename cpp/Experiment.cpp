@@ -6,46 +6,61 @@
 #include "Statistics.h"
 #include "VectorUtil.h"
 
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <filesystem>
+#include <unordered_set>
 
 namespace gxna {
 
-void PhenotypeVector::read(const std::string& filename) {
-    std::ifstream is(filename.c_str());
+void Phenotype::read(std::istream& is) {
+    is >> m_name;
     if (!is)
-        throw Exception("Could not open " + filename);
-    std::string name;
-    while (is >> name) {
-        auto it = m_name2type.find(name);
+        throw Exception("Phenotype needs name");
+    std::string label;
+    while (is >> label) {
+        if (label == m_name)
+            throw Exception("Phenotype") << ' ' << m_name << ": sample label cannot equal name";
+        auto it = m_label2n.find(label);
         int i;
-        if (it == m_name2type.end()) {
-            m_name2type[name] = i = m_type2name.size();
-            m_type2name.emplace_back(name);
+        if (it == m_label2n.end()) {
+            m_label2n[label] = i = m_label.size();
+            m_label.emplace_back(label);
         }
         else
             i = it->second;
-        m_type.emplace_back(i);
+        m_sample.emplace_back(i);
     }
-    if (nTypes() < 2)
-        throw Exception("Need at least two phenotypes in " + filename);
-
-    std::cout << "Read " << nSamples() << " samples and "
-              << nTypes() << " types from " << filename << ": "
-              << m_type2name << '\n';
+    if (m_sample.empty())
+        throw Exception("Phenotype") << ' ' << m_name << ": needs at least one sample";
+    if (nLabels() < 2)
+        throw Exception("Phenotype") << ' ' << m_name << ": needs at least two labels";
 }
 
-void PhenotypeVector::filter(const std::vector<std::string>& v) {
-    for (auto& name : v) {
-        auto it = m_name2type.find(name);
-        if (it == m_name2type.end())
-            throw Exception("Unknown phenotype " + name);
+std::ostream& operator<<(std::ostream& os, const Phenotype& p) {
+    std::vector<int> count(p.nLabels());
+    for (auto& val : p.m_sample)
+        ++count[val];
+    os << p.name() << " {";
+    for (size_t i = 0; i < count.size(); ++i) {
+        if (i)
+            os << ", ";
+        os << p.m_label[i] << " : " << count[i];
+    }
+    os << '}';
+    return os;
+}
+
+void Phenotype::filter(const std::vector<std::string>& v) {
+    for (auto& label : v) {
+        auto it = m_label2n.find(label);
+        if (it == m_label2n.end())
+            throw Exception("Phenotype") << ' ' << m_name << ": unknown sample label " << label;
         // should use it->second
     }
-    throw Exception("PhenotypeVector::filter not implemented");
+    throw Exception("Phenotype::filter not implemented");
 }
 
 void GeneData::printNameId(std::ostream& os) const {
@@ -74,15 +89,8 @@ std::string GeneData::label() const {
 
 Experiment::Experiment(Args& args_)
     : args(args_) {
-    m_phenotype.read(args.expDir + "/" + args.phenotypeFile);
-    if (args.phenotypes.size())
-        m_phenotype.filter(args.phenotypes);
-    if (args.invariantPerms) {  // read secondary phenotype, if needed
-        m_phenotypeInvariant.read(args.expDir + "/" + args.typeFile);
-        if (m_phenotypeInvariant.nSamples() != m_phenotype.nSamples())
-            throw Exception("Bad number of samples in " + args.typeFile);
-    }
 
+    readPhenotypes(args.expDir + "/" + args.phenotypeFile);
     readProbes(args.refDir + "/" + args.probeFile);
     readGeneNames(args.refDir + "/" + args.geneFile);
     readExpression(args.expDir + "/" + args.expressionFile);
@@ -93,6 +101,7 @@ Experiment::Experiment(Args& args_)
         FastDataSet d(data.expression);
         data.sd = d.sd();
     }
+
     if (args.shrink)  // use empirical Bayes shrinkage
         setShrinkageFactor();
 }
@@ -100,6 +109,7 @@ Experiment::Experiment(Args& args_)
 void Experiment::run() {
     // Select gene roots for multiple testing
     // Potential roots will not be within args.minDistance of each other
+
     std::vector<bool> ignore(m_gene.size());
     for (size_t root = 0; root < m_geneNetwork.nNodes(); ++root)
         if (m_geneNetwork.degree(root) >= unsigned(args.minDegree)
@@ -114,7 +124,20 @@ void Experiment::run() {
             }
             m_testData.emplace_back(testData);
         }
-    std::cout << "Testing " << m_testData.size() << " objects\n";
+
+    // Prepare permutations for resampling
+
+    Permutation::seed(args.seed);
+    PermutationGenerator *pg;
+    if (!args.invariant.empty()) {
+        auto& phenotype = m_phenotype[findPhenotype(args.invariant)];
+        std::cout << "Using invariant permutations for phenotype "
+                  << phenotype << std::endl;
+        pg = new InvariantPermutation(nSamples(), args.nPerms, phenotype.get());
+    }
+    else
+        pg = new UniformPermutation(nSamples(), args.nPerms);
+    pg->setVerbose(args.progress);
 
     // Multiple roots can yield the same subgraph but with different node order.
     // For example, if x, y and z are genes connected only to each other,
@@ -128,41 +151,35 @@ void Experiment::run() {
 
     constexpr double Eps = 1e-9;
     MultipleTest<Experiment> mt(*this, m_testData.size(), Eps);
-    Permutation::seed(args.seed);
-    PermutationGenerator *pg;
-    if (args.invariantPerms)
-        pg = new InvariantPermutation(m_phenotype.nSamples(), args.nPerms,
-                                      m_phenotypeInvariant.type());
-    else
-        pg = new UniformPermutation(m_phenotype.nSamples(), args.nPerms);
-    pg->setVerbose(args.progress);
+    std::cout << "Testing " << m_testData.size() << " objects using phenotype "
+              << m_mainPhenotype << std::endl;
     mt.test(*pg, args.maxTscaled);
     delete pg;
 
     for (size_t i = 0; i < m_gene.size(); ++i)  // set labels before calling printResults
         m_geneNetwork.setLabel(i, m_gene[i].label());  // label includes gene score
-
     printResults(mt);
 }
 
 static double computeScore(const std::vector<double>& expression,
-                           const std::vector<int>& phenotype, int nPhenotypes) {
-    if (nPhenotypes > 2) {  // F statistic
-        double f = fstatPheno(&expression[0], phenotype, nPhenotypes);
-        return f2z(f, nPhenotypes - 1, phenotype.size() - nPhenotypes);
+                           const std::vector<int>& pheno, int nLabels) {
+    if (nLabels > 2) {  // F statistic
+        double f = fstatPheno(&expression[0], pheno, nLabels);
+        return f2z(f, nLabels - 1, pheno.size() - nLabels);
     }
     else {  // T statistic; may want to convert to z-score
-        double t = tstatPheno(&expression[0], phenotype, 0, 1);  // pheno 0 vs 1
+        double t = tstatPheno(&expression[0], pheno, 0, 1);  // pheno 0 vs 1
         return t;
     }
 }
 
 std::vector<double> Experiment::operator()(const Permutation& perm) {
     // Recompute gene scores
-    auto phenotype = perm.apply(m_phenotype.type());
+    auto pheno = perm.apply(m_mainPhenotype.get());
+    auto nLabels = m_mainPhenotype.nLabels();
     std::vector<double> geneScorePermAbs;
     for (auto& data : m_gene) {
-        double score = computeScore(data.expression, phenotype, m_phenotype.nTypes());
+        double score = computeScore(data.expression, pheno, nLabels);
         if (args.shrink)
             score *= data.shrinkageFactor;
         data.scorePerm = score;
@@ -177,7 +194,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
     clusterScorePermAbs.reserve(m_testData.size());
     if (args.algoType == AlgoType::Basic) {
         for (auto& testData : m_testData) {
-            auto val = scoreNodeList(testData.cluster, phenotype);
+            auto val = scoreNodeList(testData.cluster, pheno, nLabels);
             clusterScorePermAbs.emplace_back(fabs(val));
             if (!m_permCount)
                 testData.score = val;
@@ -198,6 +215,24 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
     return clusterScorePermAbs;
 }
 
+// Scoring function for MultipleTest, predefined case
+double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes,
+                                 const std::vector<int>& pheno, int nLabels) {
+    if (args.sumScore || genes.size() < 2) {  // compute sum(score)
+        return m_geneNetwork.subgraphScore(genes);
+    }
+    else {  // compute score(sum)
+        std::vector<double> sum(nSamples());
+        for (auto gene : genes) {
+            if (args.sumSigned && m_gene[gene].scorePerm < 0)
+                sum -= m_gene[gene].expression;
+            else
+                sum += m_gene[gene].expression;
+        }
+        return computeScore(sum, pheno, nLabels);
+    }
+}
+
 void Experiment::setShrinkageFactor() {
     FastDataSet logVar;
     for (auto& data : m_gene)
@@ -205,28 +240,68 @@ void Experiment::setShrinkageFactor() {
             logVar.insert(2 * std::log(data.sd));
     EmpiricalBayes eb;
     eb.estimate(logVar.mean(), logVar.var(), m_gene.size(),
-                m_phenotype.nSamples() - m_phenotype.nTypes());
-    std::cout << "Empirical Bayes: df = " << eb.df() << " var = " << eb.var() << '\n';
+                nSamples() - m_mainPhenotype.nLabels());
+    std::cout << "Empirical Bayes: df = " << eb.df()
+              << " var = " << eb.var() << std::endl;
     for (auto& data : m_gene)
         data.shrinkageFactor = eb.shrinkageFactor(data.sd * data.sd);
 }
 
-// Scoring function for MultipleTest, predefined case
-double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes,
-                                 const std::vector<int>& phenotype) {
-    if (args.sumScore || genes.size() < 2) {  // compute sum(score)
-        return m_geneNetwork.subgraphScore(genes);
-    }
-    else {  // compute score(sum)
-        std::vector<double> sum(m_phenotype.nSamples());
-        for (auto gene : genes) {
-            if (args.sumSigned && m_gene[gene].scorePerm < 0)
-                sum -= m_gene[gene].expression;
-            else
-                sum += m_gene[gene].expression;
+size_t Experiment::findPhenotype(const std::string& name) const {
+    for (size_t i = 0; i < m_phenotype.size(); ++i)
+        if (m_phenotype[i].name() == name)
+            return i;
+    throw Exception("Unknown phenotype " + name);
+}
+
+// Read phenotype file.
+// Each line describes a phenotype, in the format:
+//   name sample_1 sample_2 ... sample_n
+
+void Experiment::readPhenotypes(const std::string& filename) {
+    std::ifstream is(filename.c_str());
+    if (!is)
+        throw Exception("Could not open " + filename);
+    std::string line;
+    int lineno = 0;
+    while (getline(is, line)) {
+        ++lineno;
+        std::istringstream ss(line);
+        Phenotype phenotype;
+        try {
+            phenotype.read(ss);
         }
-        return computeScore(sum, phenotype, m_phenotype.nTypes());
+        catch (Exception& e) {
+            e << " at " << filename << ':' << lineno;
+            throw e;
+        }
+        m_phenotype.emplace_back(phenotype);
     }
+
+    if (m_phenotype.empty())
+        throw Exception("Need at least one phenotype in " + filename);
+
+    std::unordered_set<std::string> names;
+    for (auto& p : m_phenotype) {
+        auto& name = p.name();
+        if (names.find(name) != names.end())
+            throw Exception("Phenotype " + name + ": appears twice in " + filename);
+        names.insert(name);
+
+        if (p.nSamples() != nSamples())
+            throw Exception("Phenotype ") << name << ": has " << p.nSamples()
+                                          << " samples expected " << nSamples();
+    }
+
+    std::cout << "Read " << m_phenotype.size() << " phenotypes: ";
+    for (auto& p : m_phenotype)
+        std::cout << p.name() << ' ';
+    std::cout << "and " << nSamples() << " samples from " << filename << std::endl;
+
+    size_t ix = args.test.empty() ? 0 : findPhenotype(args.test);
+    m_mainPhenotype = m_phenotype[ix];
+    if (args.filter.size())
+        m_mainPhenotype.filter(args.filter);
 }
 
 // Read microarray annotation file.
@@ -255,7 +330,7 @@ void Experiment::readProbes(const std::string& filename) {
                     m_geneID2index[id] = m_gene.size();
                     GeneData gene;
                     gene.id = id;
-                    gene.expression.resize(m_phenotype.nSamples());
+                    gene.expression.resize(nSamples());
                     m_gene.emplace_back(gene);
                 }
             }
@@ -265,7 +340,7 @@ void Experiment::readProbes(const std::string& filename) {
         }
     }
     std::cout << "Read " << m_probe2geneID.size() << " probes and "
-              << m_gene.size() << " genes from " << filename << '\n';
+              << m_gene.size() << " genes from " << filename << std::endl;
 }
 
 void Experiment::readGeneNames(const std::string& filename) {
@@ -283,7 +358,7 @@ void Experiment::readGeneNames(const std::string& filename) {
             }
         }
     }
-    std::cout << "Read " << n << " gene names from " << filename << "\n";
+    std::cout << "Read " << n << " gene names from " << filename << std::endl;
 }
 
 // Read probe expression values from file
@@ -307,7 +382,7 @@ void Experiment::readExpression(const std::string& filename) {
         auto it = m_probe2geneID.find(probe);
         if (ss && it != m_probe2geneID.end()) {
             std::vector<double> expression;
-            for (size_t i = 0; i < m_phenotype.nSamples(); i++) {
+            for (size_t i = 0; i < nSamples(); i++) {
                 double val;
                 if (ss >> val)
                     expression.emplace_back(val);
@@ -332,7 +407,7 @@ void Experiment::readExpression(const std::string& filename) {
     }
 
     std::cout << "Read " << nProbesRead << " expressions for " << nGenesRead
-              << " genes from " << filename << '\n';
+              << " genes from " << filename << std::endl;
 }
 
 // Output functions
@@ -340,7 +415,7 @@ void Experiment::readExpression(const std::string& filename) {
 void Experiment::writeHTML(const std::string& htmlFilename,
                            const std::string& frameFilename,
                            const std::string& startingFrame) const {
-    std::cout << "Writing HTML to " << htmlFilename << '\n';
+    std::cout << "Writing HTML to " << htmlFilename << std::endl;
     std::ofstream os(htmlFilename.c_str());
     os << "<html>" << '\n';
     os << "<title>" << "GXNA " << args.name << ' ' << args.version << "</title>" << '\n';

@@ -19,7 +19,7 @@ std::ostream& operator<<(std::ostream& os, const AlgoType& x) {
         os << "GXNA";
         break;
     default:
-        throw Exception("Bad AlgoType " + std::to_string(int(x)));
+        throw Exception("Bad AlgoType ") << int(x);
     }
     return os;
 }
@@ -43,7 +43,6 @@ Args::Args()
       scalingExponent(0.6),
       maxTscaled(false),
       nPerms(100),
-      invariantPerms(false),
       shrink(false),
       seed(5),
       nRows(250),
@@ -67,8 +66,8 @@ void Args::check() {
         msg = "Need sumScore = true for algoType = GXNA";
     else if (!sumScore && shrink)
         msg = "Need sumScore = true to use shrinkage";
-    else if (phenotypes.size() == 1)
-        msg = "Must specify at least two phenotypes";
+    else if (filter.size() == 1)
+        msg = "Filter must be empty or have at least two values";
     if (msg)
         throw Exception(msg);
 }
@@ -95,7 +94,7 @@ void Args::parse(int argc, char *argv[]) {
 void Args::read(const std::string& filename, bool strict) {
     std::ifstream is(filename.c_str());
     if (is)
-        std::cout << "Reading args from " << filename << '\n';
+        std::cout << "Reading args from " << filename << std::endl;
     else if (strict)
         throw Exception("Could not open " + filename);
     std::string key, val;
@@ -115,8 +114,9 @@ void Args::print(std::ostream& os) const {
     os << "probeFile " << probeFile << '\n';
     os << "expressionFile " << expressionFile << '\n';
     os << "phenotypeFile " << phenotypeFile << '\n';
-    os << "typeFile " << typeFile << '\n';
-    os << "phenotypes " << phenotypes << '\n';
+    os << "test " << test << '\n';
+    os << "invariant " << invariant << '\n';
+    os << "filter " << filter << '\n';
     os << "algoType " << algoType << '\n';
     os << "radius " << radius << '\n';
     os << "depth " << depth << '\n';
@@ -129,7 +129,6 @@ void Args::print(std::ostream& os) const {
     os << "scalingExponent " << scalingExponent << '\n';
     os << "maxTscaled " << maxTscaled << '\n';
     os << "nPerms " << nPerms << '\n';
-    os << "invariantPerms " << invariantPerms << '\n';
     os << "shrink " << shrink << '\n';
     os << "seed " << seed << '\n';
     os << "nRows " << nRows << '\n';
@@ -141,7 +140,7 @@ void Args::print(std::ostream& os) const {
 
 static void log_option(std::ostream& os, const char *name, const char *arg, const char *description) {
     os << "  -" << std::left
-       << std::setw(14) << name << ' '
+       << std::setw(12) << name << ' '
        << std::setw(8) << arg << "  "
        << std::right << description << '\n';
 }
@@ -153,13 +152,16 @@ void Args::usage(std::ostream& os) const {
     log_option(os, "name", "string", "experiment name");
     log_option(os, "version", "string", "output version");
     log_option(os, "probeFile", "filename", "probe annotation file");
+    log_option(os, "test", "string", "test this phenotype");
+    log_option(os, "invariant", "string", "use this phenotype for invariant permutations");
     log_option(os, "algoType", "type", "Basic | GXNA");
     log_option(os, "radius", "int", "ball radius for ball search");
     log_option(os, "depth", "int", "max cluster size for adapted search");
     log_option(os, "nPerms", "int", "number of permutations");
-    log_option(os, "invariantPerms", "bool", "use invariant permutations");
     log_option(os, "shrink", "bool", "adjust scores via empirical Bayes shrinkage");
     log_option(os, "seed", "int", "seed for random number generator");
+    log_option(os, "nRows", "int", "max number of graphs to display in html file");
+    log_option(os, "nDetailed", "int", "max number of graphs to write or draw details");
     log_option(os, "draw", "bool", "render graphs to SVG files (needs Graphviz)");
     os << "\n";
 }
@@ -205,8 +207,6 @@ void Args::setFilenames() {
         expressionFile = name + ".exp";
     if (!phenotypeFile.size())
         phenotypeFile = name + ".phe";
-    if (!typeFile.size())
-        typeFile = name + ".typ";
     auto argsFile = name + ".arg";
     read(expDir + "/" + argsFile, false);  // ignore if file is missing
 }
@@ -234,10 +234,12 @@ bool Args::setImpl(const std::string& key, const std::string& val) {
         from_string(expressionFile, val);
     else if (key == "phenotypeFile")
         from_string(phenotypeFile, val);
-    else if (key == "typeFile")
-        from_string(typeFile, val);
-    else if (key == "phenotypes")
-        from_string(phenotypes, val);
+    else if (key == "test")
+        from_string(test, val);
+    else if (key == "invariant")
+        from_string(invariant, val);
+    else if (key == "filter")
+        from_string(filter, val);
     else if (key == "algoType")
         from_string(algoType, val);
     else if (key == "radius")
@@ -262,8 +264,6 @@ bool Args::setImpl(const std::string& key, const std::string& val) {
         from_string(maxTscaled, val);
     else if (key == "nPerms")
         from_string(nPerms, val);
-    else if (key == "invariantPerms")
-        from_string(invariantPerms, val);
     else if (key == "shrink")
         from_string(shrink, val);
     else if (key == "seed")
@@ -288,7 +288,7 @@ void Args::set(const std::string& key, const std::string& val) {
         if (!setImpl(key, val))
             throw Exception("Unknown key " + key);
     }
-    catch (std::invalid_argument const& ex) {
+    catch (const std::invalid_argument& ex) {
         throw Exception("Bad key/val " + key + " = " + val);
     }
 }
