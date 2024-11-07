@@ -6,6 +6,8 @@
 #include <iostream>
 
 int main(int argc, char *argv[]) {
+    std::cout << "GXNA Version 3.0" << std::endl;
+
     gxna::Args args;
     try {
         args.parse(argc, argv);
@@ -17,7 +19,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::cout << "GXNA Version 3.0\n";
     try {
         gxna::Experiment experiment(args);
         experiment.run();

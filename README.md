@@ -88,17 +88,25 @@ If not, install it or GXNA will only be able to produce text output.
 
 All input files are standard text, with columns separated by spaces.
 Reference data resides in the [`refdata`](refdata) directory and includes interaction graph files
-such as `human.gra` and `mouse.gra`. Each microarray platform has a
+such as `human.gra` and `mouse.gra`.
+Each microarray platform has a
 [probe annotation file](#probe-annotation-files)
 that maps each probe ID to its corresponding gene; multiple probes can map to the same gene.
 Genes are referenced by their numeric GeneID from the NCBI Gene database.
 
 Experiment data resides in the [`expdata`](expdata) directory.
-Each experiment needs at least two files: a `.phe` file containing the
-sample phenotypes, and a `.exp` file containing expression data, one line per probe.
-Each line starts with the probe ID, followed by expression values (one per sample).
+Each experiment needs two files:
+a `.exp` file containing expression data, and
+a `.phe` file containing the sample phenotypes.
+Each line in the [expression file](expdata/test.exp) describes a probe:
+probe ID comes first, followed by expression values (one per sample).
 
-Phenotypes can be any string.
+Each line in the [phenotype file](expdata/test.phe)
+starts with a name, followed by sample values (one per sample),
+which can be any string.
+There may be multiple lines, each describing a different attribute.
+Differential expression scores can be computed with respect to any of the phenotypes,
+with the first one used by default.
 
 ## Examples
 
@@ -107,19 +115,21 @@ First, run
 build/gxna -name test -probeFile human1av2.ann
 ```
 Both parameters are required. They tell the program to read experiment data from
-[`test.phe`](expdata/test.phe) and `test.exp`
+[`test.exp`](expdata/test.exp) and [`test.phe`](expdata/test.phe)
 (simulated data included in the repo) and use the probe
 annotation file `human1av2.ann` for the Agilent Human 1A Version 2 microarray.
 
 Results are be written into the
-`output/test/000/` directory. The string `000` can be changed with `-version`. It makes it easy to run GXNA multiple times
+`output/test/000/` directory. The string `000` can be changed with `-version`.
+It makes it easy to run GXNA multiple times
 with various parameters and store the results in separate directories.
 Among the output files, `index.html` is the most human friendly; open it in your browser of choice.
 
 The left panel has a list of gene clusters
 and their roots, ranked in order of their *p*-values (adjusted for multiple testing).
 Clicking on any of the top clusters gives more details in the right panel.
-Running the program with default parameters performs single-gene analysis, so all clusters consist of their root and have size 1.
+Running the program with default parameters performs single-gene analysis,
+so all clusters consist of their root and have size 1.
 
 For something more interesting, run
 ```
@@ -166,9 +176,11 @@ If raw values are used, simple normalization by taking logarithms is recommended
 - If there are multiple probes for a gene, their expression values are averaged.
 - Missing values in expression data are not yet supported. Probes with missing values should be excluded from the expression file,
 or as a coarse workaround, these values can be set to zero.
-- The score of an individual gene is its *t*-statistic (unequal variances)
-if there are only two phenotypes, and ANOVA *F*-statistic
-(converted to a *z*-score) if there are three or more phenotypes.
+- The score of an individual gene is its
+[*t*-statistic](https://en.wikipedia.org/wiki/Welch%27s_t-test) (unequal variances)
+if the phenotype only has two values, and
+[ANOVA *F*-statistic](https://en.wikipedia.org/wiki/F-test)
+(converted to a *z*-score) if it has three or more values.
 - The default score of a cluster is the sum of the scores of its genes,
 scaled according to the size of the cluster. The scaling
 only matters when comparing clusters of different sizes.
@@ -182,8 +194,9 @@ They can also be read from a file, with each line consisting of a name
 and a value e.g. `draw true` (no dash).
 
 If `<name>` is the experiment name and the file
-`expdata/<name>.arg` exists, it will be read automatically. Another file can be specified on the command line with
-`-argFile <filename>`. This can be used to effectively change parameter default values.
+`expdata/<name>.arg` exists, it will be read automatically. Another file can be specified
+on the command line with `-argFile <filename>`.
+This can be used to effectively change parameter default values on a per-experiment basis.
 
 Boolean values can be set in various ways: `True`, `T`, `true` and `1` are all equivalent.
 
@@ -194,15 +207,23 @@ Below is a description of the most useful parameters. See the source code for a 
 - `probeFile`: probe annotation filename.
 - `algoType`: `Basic` (default) for ball search, `GXNA` for adapted search.
 - `radius`: ball radius for ball search.
-- `depth`: maximum cluster size for adapted search. Default is 15, recommended value between 5 and 25.
+- `depth`: maximum cluster size for adapted search.
+Default is 15, recommended value between 5 and 25.
+- `test`: phenotype used to compute test scores.
+Default is the first phenotype in `.phe` file.
+- `invariant`: phenotype used to generate invariant permutations.
+See section 2.5.3 of the GXNA [paper](https://serbannacu.github.io/gxna/doc/bioinformatics.pdf)
+for details.
 - `flexSize`: if true, adapted search may stop before reaching maximum size.
 - `minSD`: only use root genes with standard deviation above this threshold.
-- `nPerms`: number of permutations used to compute *p*-values. Default is 100, which is reasonable for exploratory analyses; 1000 or 10000 recommended for definitive estimates.
+- `nPerms`: number of permutations used to compute *p*-values. Default is 100,
+which is reasonable for exploratory analyses; 1000 or 10000 recommended for definitive estimates.
 - `shrink`: adjust scores via empirical Bayes shrinkage (moderated *t* and *F* statistics).
 See the paper by [Smyth (2004)](https://gksmyth.github.io/pubs/ebayes.pdf) for details.
 - `nRows`: maximum number of clusters to show in the HTML output.
 - `nDetailed`: maximum number of clusters to write/draw detailed data.
-- `maxOverlap`: hide clusters that overlap above this threshold with higher scoring clusters. Default is 0.75. Setting to 1 will show
+- `maxOverlap`: hide clusters that overlap above this threshold with higher scoring clusters.
+Default is 0.75. Setting to 1 will show
 everything in the HTML output but likely produce many redundant clusters.
 - `draw`: use Graphviz to render graphs in SVG format.
 
