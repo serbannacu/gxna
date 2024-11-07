@@ -8,8 +8,9 @@ interactionFile human.gra
 probeFile human1av2.ann
 expressionFile test.exp
 phenotypeFile test.phe
-typeFile test.typ
-phenotypes 
+test 
+invariant 
+filter 
 algoType Basic
 radius 1
 depth 15
@@ -22,7 +23,6 @@ sumSigned true
 scalingExponent 0.6
 maxTscaled false
 nPerms 1000
-invariantPerms false
 shrink false
 seed 5
 nRows 250
