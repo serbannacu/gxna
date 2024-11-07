@@ -181,6 +181,7 @@ or as a coarse workaround, these values can be set to zero.
 if the phenotype only has two values, and
 [ANOVA *F*-statistic](https://en.wikipedia.org/wiki/F-test)
 (converted to a *z*-score) if it has three or more values.
+Scores are capped to avoid unrealistically large or infinite values.
 - The default score of a cluster is the sum of the scores of its genes,
 scaled according to the size of the cluster. The scaling
 only matters when comparing clusters of different sizes.
