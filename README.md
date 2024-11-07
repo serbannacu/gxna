@@ -14,30 +14,39 @@ For each gene, a differential expression score is computed.
 For example, in a cancer experiment, the gene score could be the
 [*t*-statistic](https://en.wikipedia.org/wiki/Welch%27s_t-test)
 that compares its expression values in tumor vs. normal samples.
-Genes that are highly expressed or inhibited in cancer can be further investigated as therapeutic targets.
+Genes that are highly expressed or inhibited in cancer can be further
+investigated as therapeutic targets.
 
-However, in real organisms, one gene rarely acts in isolation. Processes typically involve many genes,
-acting as part of biological pathways, and an immense amount of work has gone into understanding these pathways.
-GXNA integrates this knowledge and the expression measurements, increasing statistical power and
-finding targets that are not detected by single-gene analysis.
+However, in real organisms, one gene rarely acts in isolation.
+Processes typically involve many genes, acting as part of biological pathways,
+and an immense amount of work has gone into understanding these pathways.
+GXNA integrates this knowledge and the expression measurements,
+increasing statistical power and finding targets that are not detected by
+single-gene analysis.
 
 # Algorithm
 
 ## Interaction Data
 
-GXNA represents prior biological knowledge as a (sparse) graph, with nodes corresponding to genes and edges to known interactions.
-The graph is undirected, even though the original interaction data may be directed (e.g. one gene activates another).
-Interaction type and direction are only used for displaying results, and play no role in the algorithm.
+GXNA represents prior biological knowledge as a (sparse) graph, with nodes corresponding to genes
+and edges to known interactions.
+The graph is undirected, even though the original interaction data
+may be directed (e.g. one gene activates another).
+Interaction type and direction are only used for displaying results,
+and play no role in the algorithm.
 
-Two public databases, NIH [Gene](https://www.ncbi.nlm.nih.gov/gene) and [KEGG](https://www.genome.jp/kegg), were used to
-generate interaction graphs for human and mouse genes, included with the software. Users can also create their own graphs.
+Two public databases, NIH [Gene](https://www.ncbi.nlm.nih.gov/gene)
+and [KEGG](https://www.genome.jp/kegg), were used to
+generate interaction graphs for human and mouse genes,
+included with the software. Users can also create their own graphs.
 
 ## Subgraph Search
 
 Given the interaction graph and a gene expression data set, the algorithm searches for
 small connected subgraphs (clusters of interacting genes) that are differentially expressed.
 There are two ways to select the subgraphs:
-- **Ball search**. Subgraphs are spheres of fixed radius *R* centered at some root node (*R* = 0 is the same as single gene analysis).
+- **Ball search**. Subgraphs are spheres of fixed radius *R* centered at some root node
+(*R* = 0 is the same as single gene analysis).
 - **Adapted search**. Given a root node, the subgraph is constructed by greedy search.
 At each step the adjacent node with the highest score is added, until a fixed size is reached
 or the subgraph score cannot be increased further.
@@ -53,9 +62,10 @@ for single-gene analysis is to control the [FWER](https://en.wikipedia.org/wiki/
 GXNA adapts this in the context of the subgraph search algorithm to compute statistical significance
 (p-values) for gene clusters, adjusted for testing multiple hypotheses.
 
-This is made possible by the efficient implementation of the subgraph search. In a typical run on human data
-searching for clusters of 20 genes with 5,000 roots and 1,000 permutations,
-the algorithm needs to perform 5,000,000 searches and completes in less than 10 seconds on consumer hardware.
+This is made possible by the efficient implementation of the subgraph search.
+In a typical run on human data searching for clusters of 20 genes
+with 5,000 roots and 1,000 permutations, the algorithm needs to perform
+5,000,000 searches and completes in less than 10 seconds on consumer hardware.
 
 # Installation
 
@@ -76,17 +86,18 @@ If not, install it or GXNA will only be able to produce text output.
 
 ## Input
 
+All input files are standard text, with columns separated by spaces.
 Reference data resides in the [`refdata`](refdata) directory and includes interaction graph files
 such as `human.gra` and `mouse.gra`. Each microarray platform has a
 [probe annotation file](#probe-annotation-files)
 that maps each probe ID to its corresponding gene; multiple probes can map to the same gene.
+Genes are referenced by their numeric GeneID from the NCBI Gene database.
 
 Experiment data resides in the [`expdata`](expdata) directory.
 Each experiment needs at least two files: a `.phe` file containing the
-phenotype of each sample, and a `.exp` file containing expression data, one line per probe.
+sample phenotypes, and a `.exp` file containing expression data, one line per probe.
 Each line starts with the probe ID, followed by expression values (one per sample).
 
-All files are standard text, with columns separated by spaces. Genes are referenced by their numeric GeneID from the NCBI Gene database.
 Phenotypes can be any string.
 
 ## Examples
@@ -95,7 +106,8 @@ First, run
 ```
 build/gxna -name test -probeFile human1av2.ann
 ```
-Both parameters are required. They tell the program to read experiment data from `test.phe` and `test.exp`
+Both parameters are required. They tell the program to read experiment data from
+[`test.phe`](expdata/test.phe) and `test.exp`
 (simulated data included in the repo) and use the probe
 annotation file `human1av2.ann` for the Agilent Human 1A Version 2 microarray.
 
@@ -154,17 +166,20 @@ If raw values are used, simple normalization by taking logarithms is recommended
 - If there are multiple probes for a gene, their expression values are averaged.
 - Missing values in expression data are not yet supported. Probes with missing values should be excluded from the expression file,
 or as a coarse workaround, these values can be set to zero.
-- The score of an individual gene is its *t*-statistic (unequal variances) if there are only two phenotypes, and ANOVA *F*-statistic
+- The score of an individual gene is its *t*-statistic (unequal variances)
+if there are only two phenotypes, and ANOVA *F*-statistic
 (converted to a *z*-score) if there are three or more phenotypes.
-- The default score of a cluster is the sum of the scores of its genes, scaled according to the size of the cluster. The scaling
+- The default score of a cluster is the sum of the scores of its genes,
+scaled according to the size of the cluster. The scaling
 only matters when comparing clusters of different sizes.
 
 # Reference
 
 ## Parameters
 
-Parameters can be set with command-line arguments such as `-draw true`. They can also be read from a file,
-with each line consisting of a name and a value e.g. `draw true` (no dash).
+Parameters can be set with command-line arguments such as `-draw true`.
+They can also be read from a file, with each line consisting of a name
+and a value e.g. `draw true` (no dash).
 
 If `<name>` is the experiment name and the file
 `expdata/<name>.arg` exists, it will be read automatically. Another file can be specified on the command line with
