@@ -45,7 +45,7 @@
 <title>12337</title>
 <ellipse fill="none" stroke="black" cx="598.7" cy="-537.07" rx="44.72" ry="28.99"/>
 <text text-anchor="middle" x="598.7" y="-540.27" font-family="Times,serif" font-size="14.00">ATP2A2</text>
-<text text-anchor="middle" x="598.7" y="-523.77" font-family="Times,serif" font-size="14.00">62.73</text>
+<text text-anchor="middle" x="598.7" y="-523.77" font-family="Times,serif" font-size="14.00">35.00</text>
 </g>
 <!-- 12337&#45;&gt;10108 -->
 <g id="edge3" class="edge">
@@ -81,7 +81,7 @@
 <title>10153</title>
 <ellipse fill="none" stroke="black" cx="837" cy="-220.52" rx="40.48" ry="28.99"/>
 <text text-anchor="middle" x="837" y="-223.72" font-family="Times,serif" font-size="14.00">TRAF1</text>
-<text text-anchor="middle" x="837" y="-207.22" font-family="Times,serif" font-size="14.00">38.39</text>
+<text text-anchor="middle" x="837" y="-207.22" font-family="Times,serif" font-size="14.00">35.00</text>
 </g>
 <!-- 14639&#45;&gt;10153 -->
 <g id="edge6" class="edge">

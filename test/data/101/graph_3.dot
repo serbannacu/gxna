@@ -1,12 +1,8 @@
 digraph G {
 overlap = scale ;
-1066 [label = "TNFRSF17\n3.13" ] ; 
-3165 [label = "TNFSF13B\n9.06" ] ; 
-10153 [label = "TRAF1\n38.39" ] ; 
-7756 [label = "TRAF3\n-1.32" ] ; 
-7269 [label = "TNFSF13\n-0.85" ] ; 
-1066 -> 7756 [arrowhead = "none" ]
-7269 -> 1066 [label = "B+" ]
-3165 -> 1066 [label = "B+" ]
-1066 -> 10153 [arrowhead = "none" ]
+4271 [label = "APIP\n-0.93" ] ; 
+12620 [label = "APAF1\n0.41" ] ; 
+10153 [label = "TRAF1\n35.00" ] ; 
+12620 -> 4271 [arrowhead = "none" ]
+10153 -> 4271 [arrowhead = "none" ]
 }

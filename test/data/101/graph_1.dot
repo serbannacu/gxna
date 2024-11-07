@@ -2,7 +2,7 @@ digraph G {
 overlap = scale ;
 12121 [label = "HIVEP3\n-0.30" ] ; 
 14639 [label = "TNFRSF1B\n2.80" ] ; 
-10153 [label = "TRAF1\n38.39" ] ; 
+10153 [label = "TRAF1\n35.00" ] ; 
 14639 -> 12121 [arrowhead = "none" ]
 14639 -> 10153 [arrowhead = "none" ]
 10153 -> 12121 [arrowhead = "none" ]

@@ -1,8 +1,6 @@
 digraph G {
 overlap = scale ;
-4271 [label = "APIP\n-0.93" ] ; 
-12620 [label = "APAF1\n0.41" ] ; 
-10153 [label = "TRAF1\n38.39" ] ; 
-12620 -> 4271 [arrowhead = "none" ]
-10153 -> 4271 [arrowhead = "none" ]
+13518 [label = "IFI35\n9.68" ] ; 
+823 [label = "NMI\n19.31" ] ; 
+13518 -> 823 [arrowhead = "none" ]
 }

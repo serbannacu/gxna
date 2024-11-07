@@ -1,16 +1,18 @@
 digraph G {
 overlap = scale ;
-6093 [label = "TRAIP\n-1.09" ] ; 
-11852 [label = "CYLD\n-0.87" ] ; 
-13916 [label = "FLII\n-1.16" ] ; 
-14639 [label = "TNFRSF1B\n2.80" ] ; 
-10153 [label = "TRAF1\n38.39" ] ; 
 6731 [label = "TNFRSF8\n4.90" ] ; 
-14639 -> 6093 [arrowhead = "none" ]
-13916 -> 6093 [arrowhead = "none" ]
+6093 [label = "TRAIP\n-1.09" ] ; 
+13692 [label = "TTRAP\n2.52" ] ; 
+10153 [label = "TRAF1\n35.00" ] ; 
+7756 [label = "TRAF3\n-1.32" ] ; 
+11886 [label = "TRAF5\n0.24" ] ; 
+1839 [label = "TNFSF8\n0.19" ] ; 
+6731 -> 7756 [arrowhead = "none" ]
+6731 -> 10153 [arrowhead = "none" ]
+6731 -> 11886 [arrowhead = "none" ]
+6731 -> 13692 [arrowhead = "none" ]
 10153 -> 6093 [arrowhead = "none" ]
 6731 -> 6093 [arrowhead = "none" ]
-11852 -> 6093 [arrowhead = "none" ]
-14639 -> 10153 [arrowhead = "none" ]
-6731 -> 10153 [arrowhead = "none" ]
+11886 -> 13692 [arrowhead = "none" ]
+1839 -> 6731 [label = "B+" ]
 }
