@@ -53,7 +53,7 @@ Args::Args()
 {}
 
 void Args::check() {
-    // Filter out genes without interactions, unless doing single gene analysis
+    // Filter out genes without interactions, unless doing single gene analysis.
     if (minDegree == 0 && (algoType == AlgoType::GXNA || radius > 0))
         minDegree = 1;
 
@@ -81,7 +81,7 @@ void Args::parse(int argc, char *argv[]) {
             std::string key(++s);
             std::string val(argv[n+1]);
             if (key == "argFile")
-                read(val);
+                read(val, true);  // exit if file is missing
             else
                 set(key, val);
         }

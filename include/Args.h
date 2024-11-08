@@ -6,6 +6,8 @@
 
 namespace gxna {
 
+// Program parameters
+
 enum class AlgoType { Basic, GXNA };
 
 std::ostream& operator<<(std::ostream& os, const AlgoType& x);
@@ -13,10 +15,10 @@ std::ostream& operator<<(std::ostream& os, const AlgoType& x);
 struct Args {
     Args();
     void check();
-    void parse(int argc, char *argv[]);
-    void read(const std::string& filename, bool strict = true);
+    void parse(int argc, char *argv[]);  // read from command line
+    void read(const std::string& filename, bool strict);  // read from file
     void print(std::ostream&) const;
-    void usage(std::ostream&) const;
+    void usage(std::ostream&) const;  // help message
 
     // Filenames
     std::string name;
@@ -24,9 +26,9 @@ struct Args {
     std::string refDir;  // reference data
     std::string expDir;  // experiment data (expression, phenotypes)
     std::string outputDir;
-    std::string geneFile;
-    std::string interactionFile;
-    std::string probeFile;
+    std::string geneFile;  // gene metadata
+    std::string interactionFile;  // gene interactions
+    std::string probeFile;  // probe metadata
     std::string expressionFile;
     std::string phenotypeFile;
 
@@ -51,7 +53,7 @@ struct Args {
 
     // Algorithm p-value calculations
     bool maxTscaled;
-    int nPerms;
+    int nPerms;  // for resampling
 
     // Algorithm other parameters
     bool shrink;  // adjust gene scores using empirical Bayes shrinkage
