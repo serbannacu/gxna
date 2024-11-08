@@ -1,6 +1,8 @@
 #include "Experiment.h"
+
 #include "Distribution.h"
 #include "Exception.h"
+#include "Log.h"
 #include "MultipleTest.h"
 #include "RandomPermutation.h"
 #include "Statistics.h"
@@ -96,17 +98,24 @@ Experiment::Experiment(Args& args_)
     readExpression(args.expDir + "/" + args.expressionFile);
     m_geneNetwork.setSize(m_gene.size());  // so genes with no interactions are included
     m_geneNetwork.readInteractions(args.refDir + "/" + args.interactionFile, m_geneID2index);
+}
+
+void Experiment::run() {
+    // Prepare output directory and log stream
+
+    std::string outputPath = args.outputDir + "/" + args.name + "/" + args.version;
+    std::filesystem::create_directories(outputPath);
+    LogGuard logGuard {(outputPath + "/" + "log.txt").c_str()};
+
+    // Compute gene statistics
 
     for (auto& data : m_gene) {
         FastDataSet d(data.expression);
         data.sd = d.sd();
     }
-
     if (args.shrink)  // use empirical Bayes shrinkage
         setShrinkageFactor();
-}
 
-void Experiment::run() {
     // Select gene roots for multiple testing
     // Potential roots will not be within args.minDistance of each other
 
@@ -158,7 +167,7 @@ void Experiment::run() {
 
     for (size_t i = 0; i < m_gene.size(); ++i)  // set labels before calling printResults
         m_geneNetwork.setLabel(i, m_gene[i].label());  // label includes gene score
-    printResults(mt);
+    printResults(mt, outputPath);
 }
 
 static double computeScore(const std::vector<double>& expression,
@@ -186,7 +195,6 @@ static double computeScore(const std::vector<double>& expression,
 
 std::vector<double> Experiment::operator()(const Permutation& perm) {
     // Recompute gene scores
-
     auto pheno = perm.apply(m_mainPhenotype.get());
     auto nLabels = m_mainPhenotype.nLabels();
 
@@ -203,7 +211,6 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
     m_geneNetwork.setScores(geneScorePermAbs, args.scalingExponent);
 
     // Recompute cluster scores
-
     std::vector<double> clusterScorePermAbs;
     clusterScorePermAbs.reserve(m_testData.size());
     if (args.algoType == AlgoType::Basic) {
@@ -226,6 +233,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
         }
     }
     ++m_permCount;
+    std::clog << "Perm " << m_permCount << ' ' << perm.get() << std::endl;
     return clusterScorePermAbs;
 }
 
@@ -482,10 +490,7 @@ static void addRow(std::ostream& os, const std::string& url, size_t n,
     os << "</tr>" << '\n';
 }
 
-void Experiment::printResults(const MultipleTest<Experiment>& mt) {
-    std::string path = args.outputDir + "/" + args.name + "/" + args.version;
-    std::filesystem::create_directories(path);
-
+void Experiment::printResults(const MultipleTest<Experiment>& mt, const std::string& path) {
     std::string htmlFilename = "index.html";
     std::string frameFilename = "frame1.html";
     std::string startingFrame;

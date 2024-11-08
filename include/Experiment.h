@@ -75,7 +75,7 @@ class Experiment {
     // Output
     void writeHTML(const std::string& htmlFilename, const std::string& frameFilename,
                    const std::string& startingFrame) const;
-    void printResults(const MultipleTest<Experiment>&);
+    void printResults(const MultipleTest<Experiment>& mt, const std::string& path);
 
     struct TestData {
         size_t root;
