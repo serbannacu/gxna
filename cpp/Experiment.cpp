@@ -17,6 +17,8 @@
 
 namespace gxna {
 
+// Read one phenotype from stream.
+// Format: name label_1 ... label_m (one label per sample)
 void Phenotype::read(std::istream& is) {
     is >> m_name;
     if (!is)
@@ -41,6 +43,7 @@ void Phenotype::read(std::istream& is) {
         throw Exception("Phenotype") << ' ' << m_name << ": needs at least two labels";
 }
 
+// Print name, labels and label counts.
 std::ostream& operator<<(std::ostream& os, const Phenotype& p) {
     std::vector<int> count(p.nLabels());
     for (auto& val : p.m_sample)
@@ -101,13 +104,13 @@ Experiment::Experiment(Args& args_)
 }
 
 void Experiment::run() {
-    // Prepare output directory and log stream
+    // Prepare output directory and log stream.
 
     std::string outputPath = args.outputDir + "/" + args.name + "/" + args.version;
     std::filesystem::create_directories(outputPath);
     LogGuard logGuard {(outputPath + "/" + "log.txt").c_str()};
 
-    // Compute gene statistics
+    // Compute gene statistics.
 
     for (auto& data : m_gene) {
         FastDataSet d(data.expression);
@@ -116,25 +119,25 @@ void Experiment::run() {
     if (args.shrink)  // use empirical Bayes shrinkage
         setShrinkageFactor();
 
-    // Select gene roots for multiple testing
-    // Potential roots will not be within args.minDistance of each other
+    // Select gene roots for multiple testing.
+    // Potential roots will not be within args.minDistance of each other.
 
     std::vector<bool> ignore(m_gene.size());
     for (size_t root = 0; root < m_geneNetwork.nNodes(); ++root)
         if (m_geneNetwork.degree(root) >= unsigned(args.minDegree)
             && m_gene[root].sd >= args.minSD && !ignore[root]) {
-            TestData testData;
-            testData.root = root;
+            Cluster cluster;
+            cluster.root = root;
             if (args.algoType == AlgoType::Basic)
-                testData.cluster = m_geneNetwork.ball(root, args.radius);
+                cluster.nodes = m_geneNetwork.ball(root, args.radius);
             if (args.minDistance > 0) {  // do not use nearby genes as roots
                 for (auto v : m_geneNetwork.ball(root, args.minDistance))
                     ignore[v] = true;
             }
-            m_testData.emplace_back(testData);
+            m_cluster.emplace_back(cluster);
         }
 
-    // Prepare permutations for resampling
+    // Prepare permutations for resampling.
 
     Permutation::seed(args.seed);
     PermutationGenerator *pg;
@@ -159,8 +162,8 @@ void Experiment::run() {
     // small but expected to exceed the rounding error.
 
     constexpr double Eps = 1e-9;
-    MultipleTest<Experiment> mt(*this, m_testData.size(), Eps);
-    std::cout << "Testing " << m_testData.size() << " objects using phenotype "
+    MultipleTest<Experiment> mt(*this, m_cluster.size(), Eps);
+    std::cout << "Testing " << m_cluster.size() << " objects using phenotype "
               << m_mainPhenotype << std::endl;
     mt.test(*pg, args.maxTscaled);
     delete pg;
@@ -194,7 +197,7 @@ static double computeScore(const std::vector<double>& expression,
 }
 
 std::vector<double> Experiment::operator()(const Permutation& perm) {
-    // Recompute gene scores
+    // Recompute gene scores.
     auto pheno = perm.apply(m_mainPhenotype.get());
     auto nLabels = m_mainPhenotype.nLabels();
 
@@ -210,25 +213,25 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
     }
     m_geneNetwork.setScores(geneScorePermAbs, args.scalingExponent);
 
-    // Recompute cluster scores
+    // Recompute cluster scores.
     std::vector<double> clusterScorePermAbs;
-    clusterScorePermAbs.reserve(m_testData.size());
+    clusterScorePermAbs.reserve(m_cluster.size());
     if (args.algoType == AlgoType::Basic) {
-        for (auto& testData : m_testData) {
-            auto val = scoreNodeList(testData.cluster, pheno, nLabels);
-            clusterScorePermAbs.emplace_back(std::fabs(val));
+        for (auto& cluster : m_cluster) {
+            auto score = scoreNodeList(cluster.nodes, pheno, nLabels);
+            clusterScorePermAbs.emplace_back(std::fabs(score));
             if (!m_permCount)
-                testData.score = val;
+                cluster.score = score;
         }
     }
     else {  // AlgoType::GXNA
-        GeneNetwork::NodeList cluster;
-        for (auto& testData : m_testData) {
-            auto val = m_geneNetwork.findSubgraph(testData.root, args.depth, args.flexSize, cluster);
-            clusterScorePermAbs.emplace_back(std::fabs(val));
+        GeneNetwork::NodeList nodes;
+        for (auto& cluster : m_cluster) {
+            auto score = m_geneNetwork.findSubgraph(cluster.root, args.depth, args.flexSize, nodes);
+            clusterScorePermAbs.emplace_back(std::fabs(score));
             if (!m_permCount) {
-                testData.cluster = cluster;
-                testData.score = val;
+                cluster.nodes = nodes;
+                cluster.score = score;
             }
         }
     }
@@ -237,7 +240,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
     return clusterScorePermAbs;
 }
 
-// Scoring function for MultipleTest, predefined case
+// Scoring function for MultipleTest, predefined case.
 double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes,
                                  const std::vector<int>& pheno, int nLabels) {
     if (args.sumScore || genes.size() < 2) {  // compute sum(score)
@@ -278,7 +281,7 @@ size_t Experiment::findPhenotype(const std::string& name) const {
 
 // Read phenotype file.
 // Each line describes a phenotype, in the format:
-//   name sample_1 sample_2 ... sample_n
+//   name label_1 label_2 ... label_m
 
 void Experiment::readPhenotypes(const std::string& filename) {
     std::ifstream is(filename.c_str());
@@ -303,6 +306,7 @@ void Experiment::readPhenotypes(const std::string& filename) {
     if (m_phenotype.empty())
         throw Exception("Need at least one phenotype in " + filename);
 
+    // Check names are unique and number of samples are equal.
     std::unordered_set<std::string> names;
     for (auto& p : m_phenotype) {
         auto& name = p.name();
@@ -383,13 +387,13 @@ void Experiment::readGeneNames(const std::string& filename) {
     std::cout << "Read " << n << " gene names from " << filename << std::endl;
 }
 
-// Read probe expression values from file
+// Read probe expression values from file.
 // Each line describes a probe, in the format:
 //     probe_id expr_1 expr_2 .. expr_n (one expression per phenotype)
-// Probes that do not map to a gene (as per the microarray annotation file) are ignored
-// Genes with no probes get expression 0
-// Genes with multiple probes (or multiple copies of the same probe) get probe average
-// Missing / NA expression values are not allowed (for now)
+// Probes that do not map to a gene (as per the microarray annotation file) are ignored.
+// Genes with no probes get expression 0.
+// Genes with multiple probes (or multiple copies of the same probe) get probe average.
+// Missing / NA expression values are not allowed (for now).
 
 void Experiment::readExpression(const std::string& filename) {
     std::ifstream is(filename.c_str());
@@ -473,6 +477,7 @@ void addCell(std::ostream& os, const T& val) {
     os << "<td>" << val << "</td>" << '\n';
 }
 
+// Add table row for one root/cluster.
 static void addRow(std::ostream& os, const std::string& url, size_t n,
                    const std::string& root, const std::string& rootid,
                    size_t size, double score, double rawp, double adjp) {
@@ -505,32 +510,32 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt, const std::str
     std::vector<bool> printed(m_gene.size());
     osResults << std::fixed << std::setprecision(3);
     int nDetailed = 0;
-    for (size_t i = 0; i < m_testData.size(); ++i) {
-        auto& testData = m_testData[mt.getRank(i)];
-        auto& rootData = m_gene[testData.root];
-        auto size = testData.cluster.size();
-        double score = testData.score, rawP = mt.getRawP(i), adjP = mt.getAdjP(i);
+    for (size_t i = 0; i < m_cluster.size(); ++i) {
+        auto& cluster = m_cluster[mt.getRank(i)];
+        auto& rootData = m_gene[cluster.root];
+        auto size = cluster.nodes.size();
+        double score = cluster.score, rawP = mt.getRawP(i), adjP = mt.getAdjP(i);
 
+        // Write line to results file.
         osResults << std::setw(5) << i << ' ';
         rootData.printNameId(osResults);
         osResults << std::setw(3) << size << ' '
                   << std::setw(6) << score << ' '
                   << rawP << ' '
                   << adjP << ' ';
-        for (auto& v : testData.cluster)
+        for (auto& v : cluster.nodes)
             osResults << std::setw(6) << m_gene[v].id << ' ';
         osResults << '\n';
 
-        // Now check overlap between current and previous clusters
-        size_t nPrinted = 0;
-        for (auto& v : testData.cluster)
+        size_t nPrinted = 0;  // check overlap between cluster and previous ones
+        for (auto& v : cluster.nodes)
             if (printed[v])
                 ++nPrinted;
         if (nPrinted <= args.maxOverlap * size) {  // low overlap, OK to print
-            for (auto& v : testData.cluster)
+            for (auto& v : cluster.nodes)
                 printed[v] = true;  // mark as printed
             std::string url;
-            if (nDetailed < args.nDetailed) {
+            if (nDetailed < args.nDetailed) {  // write details
                 std::string prefix = "graph_" + std::to_string(nDetailed) + ".";
                 std::string filenameTXT = path + "/" + prefix + "txt";
                 std::string filenameDOT = path + "/" + prefix + "dot";
@@ -540,9 +545,9 @@ void Experiment::printResults(const MultipleTest<Experiment>& mt, const std::str
                 if (!startingFrame.size())
                     startingFrame = url;
 
-                m_geneNetwork.write(testData.cluster, filenameDOT, draw ? filenameSVG : "");
+                m_geneNetwork.write(cluster.nodes, filenameDOT, draw ? filenameSVG : "");
                 std::ofstream osTXT(filenameTXT.c_str());
-                for (auto& v : testData.cluster)
+                for (auto& v : cluster.nodes)
                     osTXT << m_gene[v] << '\n';
             }
             if (nDetailed < args.nRows)

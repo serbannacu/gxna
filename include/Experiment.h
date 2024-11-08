@@ -44,18 +44,23 @@ struct GeneData {
     std::string id;  // NCBI gene ID
     std::string name = "NA";
     size_t nProbes = 0;  // probes that map to this gene AND have expression data
-    std::vector<double> expression;
+    std::vector<double> expression;  // one value per sample
     double sd = 0;  // standard deviation of expression
     double shrinkageFactor = 1.0;  // used for empirical Bayes shrinkage
     double score = 0;
     double scorePerm = 0;  // score for the current permutation
 };
 
+// Main class
 class Experiment {
  public:
     explicit Experiment(Args&);
+
+    // Main entry point
     void run();
-    std::vector<double> operator()(const Permutation& perm);  // used by MultipleTest
+
+    // Apply perm to phenotype and recommpute scores. Used by MultipleTest.
+    std::vector<double> operator()(const Permutation& perm);
 
  private:
     size_t nSamples() const { return m_phenotype[0].nSamples(); }
@@ -66,6 +71,7 @@ class Experiment {
     void setShrinkageFactor();
 
     // Input
+
     size_t findPhenotype(const std::string& name) const;
     void readPhenotypes(const std::string& filename);
     void readProbes(const std::string& filename);
@@ -73,13 +79,14 @@ class Experiment {
     void readExpression(const std::string& filename);
 
     // Output
+
     void writeHTML(const std::string& htmlFilename, const std::string& frameFilename,
                    const std::string& startingFrame) const;
     void printResults(const MultipleTest<Experiment>& mt, const std::string& path);
 
-    struct TestData {
+    struct Cluster {
         size_t root;
-        GeneNetwork::NodeList cluster;
+        GeneNetwork::NodeList nodes;
         double score = 0;
     };
 
@@ -88,9 +95,9 @@ class Experiment {
     std::unordered_map<std::string, std::string> m_probe2geneID;
     std::unordered_map<std::string, size_t> m_geneID2index;
     GeneNetwork m_geneNetwork;  // gene interaction graph
-    std::vector<Phenotype> m_phenotype;
+    std::vector<Phenotype> m_phenotype;  // sample phenotypes (attributes)
     Phenotype m_mainPhenotype;  // phenotype used to compute scores
-    std::vector<TestData> m_testData;  // one for each root/hypothesis being tested
+    std::vector<Cluster> m_cluster;  // one for each root/hypothesis being tested
     size_t m_permCount = 0;
 };
 
