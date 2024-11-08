@@ -38,7 +38,7 @@ class LogGuard {
     LogGuard& operator=(const LogGuard&) = delete;  // non copyable
 
  private:
-    std::streambuf *m_buf;
+    std::streambuf *m_buf = nullptr;
     std::ofstream *m_os;
 };
 
