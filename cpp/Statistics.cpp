@@ -53,8 +53,10 @@ double fstat(const std::vector<FastDataSet>& v_data) {
     auto n = v_data.size();
     int df = all.size() - n;
     if (n > 1 && df > 0) {
-        if (rss > 0)
-            return (all.rss() / rss - 1) * df / (n - 1);
+        if (rss > 0) {
+            double delta = all.rss() - rss;
+            return delta > 0 ? delta / rss * df / (n - 1) : delta;
+        }
         else
             return all.rss() > 0 ? PlusInfinity : 0;
     }

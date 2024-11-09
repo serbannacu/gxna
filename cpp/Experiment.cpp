@@ -209,7 +209,6 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
         data.scorePerm = score;
         if (!m_permCount) {
             data.score = score;
-            std::clog << std::fixed << std::setprecision(6) << data.name << ' ' << data.score << std::endl;
         }
         geneScorePermAbs.emplace_back(std::fabs(score));
     }

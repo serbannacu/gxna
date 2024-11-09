@@ -88,8 +88,7 @@ double tSF(double t, double n) {
 }
 
 double fCDF(double f, double n1, double n2) {
-    double x = n2 / (n2 + n1 * f);
-    return 1 - betainc(n2 / 2, n1 / 2, x);
+    return 1 - fSF(f, n1, n2);
 }
 
 double fSF(double f, double n1, double n2) {
@@ -103,7 +102,7 @@ double t2z(double t, double n) {
 }
 
 double f2z(double f, double n1, double n2) {
-    return -zCDFinv(0.5 * fSF(f, n1, n2));
+    return f > 0 ? -zCDFinv(0.5 * fSF(f, n1, n2)) : 0;
 }
 
 // Fast error function inverse uses Winitzki's approximation
@@ -111,7 +110,7 @@ double zCDFinv(double y) {
     constexpr double Pi = 3.141592653589793;
     constexpr double A = 7.1422296;
     constexpr double B = 2 * A / Pi;
-    double p = std::log(4.0 * y * (1 - y));
+    double p = std::log(4 * y * (1 - y));
     double q = 0.5 * p + B;
     double r = std::sqrt(q * q - p * A) - q;
     double val = std::sqrt(2 * r);
