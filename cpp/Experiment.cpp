@@ -207,8 +207,10 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
         if (args.shrink)
             score *= data.shrinkageFactor;
         data.scorePerm = score;
-        if (!m_permCount)
+        if (!m_permCount) {
             data.score = score;
+            std::clog << std::fixed << std::setprecision(6) << data.name << ' ' << data.score << std::endl;
+        }
         geneScorePermAbs.emplace_back(std::fabs(score));
     }
     m_geneNetwork.setScores(geneScorePermAbs, args.scalingExponent);
@@ -220,8 +222,9 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
         for (auto& cluster : m_cluster) {
             auto score = scoreNodeList(cluster.nodes, pheno, nLabels);
             clusterScorePermAbs.emplace_back(std::fabs(score));
-            if (!m_permCount)
+            if (!m_permCount) {
                 cluster.score = score;
+            }
         }
     }
     else {  // AlgoType::GXNA
