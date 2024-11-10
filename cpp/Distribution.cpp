@@ -4,24 +4,28 @@
 
 namespace gxna {
 
-// Helpers for incomplete beta function calculation
-// Use the Lentz algorithm to compute continuous fraction
+// Helpers for incomplete beta function calculation.
 
-// Avoid division by zero
+// Avoid division by zero.
+
 inline void checkZero(double x) {
     constexpr double Epsilon = 1e-30;
     if (std::fabs(x) < Epsilon)
         x = Epsilon;
 }
 
-// Iterative updates of the C and D continuous fraction coefficients
+// Compute continuous fraction using the Lentz algorithm.
+// The coefficients C_i and D_i are updated iteratively.
+// After n iterations, the fraction is estimated as
+//   frac = (C_1 D_1) * (C_2 D_2) * ... * (C_n D_n)
+
 inline void updateD(double& d, double coeff) {
     d = 1 + coeff * d;
     checkZero(d);
     d = 1 / d;
 }
 
-inline double updateCD(double& frac, double& c, double& d, double coeff) {
+inline double updateFraction(double& frac, double& c, double& d, double coeff) {
     c = 1 + coeff / c;
     checkZero(c);
     updateD(d, coeff);
@@ -30,23 +34,31 @@ inline double updateCD(double& frac, double& c, double& d, double coeff) {
     return prod;
 }
 
-// Compute continuous fraction
+// Compute continuous fraction.
+
 static double betaLentz(double a, double b, double x) {
     constexpr int MaxIterations = 500;
     constexpr double MaxError = 1e-10;
+
+    // Initialize coefficients.
     double sum = a + b;
     double q = a;
     double c = 1;
     double d = 1;
     updateD(d, -sum / (a + 1) * x);
     double frac = d;
+
+    // In the continuous fraction expansion for the beta function,
+    // odd and even coefficients are given by different formulas.
+    // Therefore, each loop step below involves two updates.
+
     for (int m = 1; m <= MaxIterations; ++m) {
         double coeff;
         q += 2;
         coeff = m * (--b) / ((q - 1) * q);
-        updateCD(frac, c, d, coeff * x);
+        updateFraction(frac, c, d, coeff * x);
         coeff = (++a) * (++sum) / (q * (q + 1));
-        double val = updateCD(frac, c, d, -coeff * x) - 1;
+        double val = updateFraction(frac, c, d, -coeff * x) - 1;
         if (std::fabs(val) < MaxError)
             break;
     }
@@ -96,25 +108,33 @@ double fSF(double f, double n1, double n2) {
     return betainc(n2 / 2, n1 / 2, x);
 }
 
+// Fast error function inverse using Winitzki's approximation.
+// Expects 0 <= y <= 2.
+// Could also compute p = std::log1p(-z * z) where z = y - 1,
+// which is more accurate near y = 1 but overflows near 0 and 2.
+
+double erfinv(double y) {
+    constexpr double Pi = 3.141592653589793;
+    constexpr double A = 7.1422296;
+    constexpr double B = 2 * A / Pi;
+    double p = std::log(y * (2 - y));
+    double q = 0.5 * p + B;
+    double r = std::sqrt(q * q - p * A) - q;
+    return std::sqrt(2 * r);
+}
+
+double zCDFinv(double y) {
+    auto val = erfinv(2 * y);
+    return y >= 0.5 ? val : -val;
+}
+
 double t2z(double t, double n) {
     auto z = f2z(t * t, 1, n);
     return t >= 0 ? z : -z;
 }
 
 double f2z(double f, double n1, double n2) {
-    return f > 0 ? -zCDFinv(0.5 * fSF(f, n1, n2)) : 0;
-}
-
-// Fast error function inverse uses Winitzki's approximation
-double zCDFinv(double y) {
-    constexpr double Pi = 3.141592653589793;
-    constexpr double A = 7.1422296;
-    constexpr double B = 2 * A / Pi;
-    double p = std::log(4 * y * (1 - y));
-    double q = 0.5 * p + B;
-    double r = std::sqrt(q * q - p * A) - q;
-    double val = std::sqrt(2 * r);
-    return y >= 0.5 ? val : -val;
+    return f > 0 ? erfinv(fSF(f, n1, n2)) : 0;
 }
 
 }  // namespace gxna
