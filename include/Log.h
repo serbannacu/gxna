@@ -16,7 +16,7 @@ namespace gxna {
 
 class LogGuard {
  public:
-    LogGuard(const char *filename) {
+    explicit LogGuard(const char *filename) {
         m_os = new std::ofstream(filename);
         if (*m_os) {
             m_buf = std::clog.rdbuf();
@@ -43,4 +43,4 @@ class LogGuard {
     std::ofstream *m_os;
 };
 
-}  // gxna
+}  // namespace gxna
