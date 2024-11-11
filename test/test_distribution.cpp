@@ -38,7 +38,7 @@ TEST(Distribution, tCDF) {
         EXPECT_NEAR(tCDF(-1e20, n), 0, 1e-4);
         EXPECT_EQ(tCDF(0, n), 0.5);
     }
-    
+
     // Special values
     constexpr double Pi = 3.141592653589793;
     for (double t = -10; t <= 10; t += 0.2) {

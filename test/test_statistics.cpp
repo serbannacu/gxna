@@ -12,7 +12,7 @@ class DataSetTest : public testing::Test {
     DataSetTest()
         : fa(a), fb(b), fc(c)
     {}
-    
+
     const std::vector<double> a { 1, 3, 2, 4, 5, 2.5, 0, 1, 0.8 };
     const std::vector<double> b { 5, 3, 8, 8.1, 10, 7, 7, 9, 0.2, 4, 4, 4.5 };
     const std::vector<double> c { 3, 2, 7, 3.1, 8, 9, 0, 0 };
@@ -47,7 +47,7 @@ TEST_F(DataSetTest, TF) {
     EXPECT_DOUBLE_EQ(fstat({fa, fb, fc}), 4.5688416461171313);
 
     constexpr auto Inf = std::numeric_limits<double>::infinity();
-    
+
     // t stat corner cases
     EXPECT_EQ(tstat(fa, fa), 0);
     EXPECT_EQ(tstat(fb, fb), 0);
@@ -57,7 +57,7 @@ TEST_F(DataSetTest, TF) {
     EXPECT_EQ(tstat(twos, twos), 0);
     EXPECT_EQ(tstat(ones, twos), Inf);
     EXPECT_EQ(tstat(twos, ones), -Inf);
-    
+
     // F stat corner cases
     EXPECT_EQ(fstat({fa, fa}), 0);
     EXPECT_EQ(fstat({fb, fb}), 0);
@@ -79,8 +79,8 @@ TEST(Gamma, Basic) {
     EXPECT_NEAR(harmonic2(20), 1.59616324391302, eps);
 
     // Special values
-    EXPECT_NEAR(digamma(0.5), -std::log(4) - Gamma, eps); 
-    EXPECT_NEAR(digamma(1), -Gamma, eps); 
+    EXPECT_NEAR(digamma(0.5), -std::log(4) - Gamma, eps);
+    EXPECT_NEAR(digamma(1), -Gamma, eps);
     EXPECT_NEAR(digamma(2), 1 - Gamma, eps);
 
     // Spot checks
