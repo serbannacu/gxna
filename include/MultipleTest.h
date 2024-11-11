@@ -33,7 +33,9 @@ class MultipleTest {
           m_eps(eps),
           m_rawP(nObjects, 1.0),
           m_adjP(nObjects, 1.0)
-    {}
+    {
+        assert(nObjects > 0);
+    }
 
     double getRawP(int i) const { return m_rawP[i]; }
     double getAdjP(int i) const { return m_adjP[i]; }
