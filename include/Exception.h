@@ -19,6 +19,7 @@ class Exception : public std::exception {
         return m_msg.c_str();
     }
 
+    // Append string representation of value to exception message.
     template<class T>
     Exception& operator<<(const T& val) {
         std::ostringstream oss;

@@ -9,9 +9,10 @@ namespace gxna {
 // As long as the LogGuard object exists, output to std::clog will be
 // redirected to the file.
 
-// The ctor creates an ofstream and redirects to it, the dtor destroys it
-// and restores clog to its original buffer. This ensure that clog will
-// not try to write to an invalid buffer after the ofstream no longer exists.
+// The ctor creates an ofstream and redirects clog to it.
+// The dtor destroys the ofstream and restores clog to its original buffer.
+// This ensures that clog will not try to write to an invalid buffer
+// after the ofstream no longer exists.
 
 class LogGuard {
  public:
