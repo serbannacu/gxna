@@ -1,12 +1,13 @@
 #include "Statistics.h"
 
-#include "gtest/gtest.h"
-
 #include <cmath>
+#include <limits>
 #include <vector>
+#include "gtest/gtest.h"
 
 namespace gxna {
 
+// Data sets for testing
 class DataSetTest : public testing::Test {
  protected:
     DataSetTest()
@@ -35,6 +36,7 @@ TEST_F(DataSetTest, Basic) {
 }
 
 TEST_F(DataSetTest, TF) {
+    // Special values and symmetry
     double t = 3.7245441941478252;
     EXPECT_DOUBLE_EQ(tstat(fa, fb), t);
     EXPECT_DOUBLE_EQ(tstat(fb, fa), -t);
@@ -66,7 +68,8 @@ TEST_F(DataSetTest, TF) {
     EXPECT_EQ(fstat({ones, twos}), Inf);
     EXPECT_EQ(fstat({twos, ones}), Inf);
 
-    EXPECT_EQ(fstat({ FastDataSet({1}), FastDataSet({2}), FastDataSet({5}) }), 0);  // singletons
+    // Singletons
+    EXPECT_EQ(fstat({ FastDataSet({1}), FastDataSet({2}), FastDataSet({5}) }), 0);
 }
 
 TEST(Gamma, Basic) {
@@ -103,4 +106,4 @@ TEST(Gamma, Inverse) {
     }
 }
 
-}  // gxna
+}  // namespace gxna

@@ -1,8 +1,7 @@
 #include "Distribution.h"
 
-#include "gtest/gtest.h"
-
 #include <cmath>
+#include "gtest/gtest.h"
 
 namespace gxna {
 
@@ -62,6 +61,7 @@ TEST(Distribution, fCDF) {
 
     for (double n1 = 0.5; n1 <= 10; n1 += 0.2)
         for (double n2 = 0.5; n2 <= 10; n2 += 0.2) {
+            // Zero to zero
             EXPECT_EQ(fCDF(0, n1, n2), 0);
 
             // Asymptotics
@@ -70,7 +70,7 @@ TEST(Distribution, fCDF) {
                 EXPECT_NEAR(val, 1, 100 / f) << f << ' ' << n1 << ' ' << n2;
             }
 
-            // If X ~ F(m1, n2) then 1 / X ~ F(n2, n1)
+            // If X ~ F(n1, n2) then 1 / X ~ F(n2, n1)
             for (auto x : { 0.3, 0.4, 0.5, 2.0, 3.0, 4.0 })
                 EXPECT_NEAR(fCDF(x, n1, n2), 1 - fCDF(1 / x, n2, n1), eps);
         }
@@ -106,4 +106,4 @@ TEST(Distribution, zCDFInv) {
     EXPECT_NEAR(zCDFinv(0.8414), 1.0002, 0.0002);
 }
 
-}  // gxna
+}  // namespace gxna
