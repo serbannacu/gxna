@@ -39,7 +39,7 @@ class Phenotype {
 struct GeneData {
     void printNameId(std::ostream& os) const;
     void print(std::ostream& os) const;
-    std::string label() const;
+    std::string text() const;  // used to draw node in Graphviz output
 
     std::string id;  // NCBI gene ID
     std::string name = "NA";
@@ -56,7 +56,7 @@ class Experiment {
  public:
     explicit Experiment(Args&);
 
-    // Main entry point
+    // Main entry point.
     void run();
 
     // Apply perm to phenotype and recommpute scores. Used by MultipleTest.
@@ -66,9 +66,13 @@ class Experiment {
     size_t nSamples() const { return m_phenotype[0].nSamples(); }
 
     // Computation
+
+    // Scoring function for AlgoType::Basic.
     double scoreNodeList(const GeneNetwork::NodeList& genes,
                          const std::vector<int>& label, int nLabels);
-    void setShrinkageFactor();
+
+    // Compute empirical Bayes shrinkage factors.
+    void setShrinkageFactors();
 
     // Input
 

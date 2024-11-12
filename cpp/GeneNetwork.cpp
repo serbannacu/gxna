@@ -39,15 +39,15 @@ void GeneNetwork::readInteractions(const std::string& filename,
                 addEdge(n1, n2, type);
         }
     }
-    std::cout << "Read " << m_nEdges << " interactions from " << filename << '\n';
     for (auto it : gene2index)
-        setLabel(it.second, it.first);
+        setText(it.second, it.first);
+    std::cout << "Read " << m_nEdges << " interactions from " << filename << '\n';
 }
 
 void GeneNetwork::addEdge(size_t n1, size_t n2, const std::string& type) {
     Edge edge(n1, n2);
-    if (m_edgeType.find(edge) == m_edgeType.end()) {  // new edge
-        if (m_edgeType.find(Edge(n2, n1)) == m_edgeType.end()) {
+    if (m_edgeType.find(edge) == m_edgeType.end()) {
+        if (m_edgeType.find(Edge(n2, n1)) == m_edgeType.end()) {  // new edge
             auto n = std::max(n1, n2);
             if (m_neighbors.size() <= n)
                 m_neighbors.resize(n + 1);
@@ -64,15 +64,18 @@ GeneNetwork::NodeList GeneNetwork::ball(size_t root, size_t radius) const {
     NodeList boundary { root };
     std::unordered_set<size_t> ballSet { root };
 
+    // At each step, the ball radius grows by 1.
     for (size_t i = 1; i <= radius && boundary.size(); ++i) {
         NodeList newBoundary;
-        for (auto v : boundary)
-            for (auto w : m_neighbors[v])
+        for (auto v : boundary) {
+            for (auto w : m_neighbors[v]) {
                 if (ballSet.find(w) == ballSet.end()) {
                     ball.emplace_back(w);
                     newBoundary.emplace_back(w);
                     ballSet.insert(w);
                 }
+            }
+        }
         boundary = newBoundary;
     }
     return ball;
@@ -147,9 +150,9 @@ double GeneNetwork::findSubgraph(size_t root, size_t depth, bool flexSize, NodeL
 
     double scaledScore = getScaledScore(sumScore, subgraph.size());
     if (flexSize) {
-        // Check if some sub-subgraph has a better (scaled) score than the subgraph.
+        // Check if some sub-subgraph has a better (scaled) score than the full subgraph.
         auto scaledSize = subgraph.size();
-        double val = 0;
+        double val = 0;  // sum of scores of nodes added so far
         for (size_t size = 1; size < subgraph.size(); ++size) {
             val += m_score[subgraph[size - 1]];
             double score = getScaledScore(val, size);
@@ -159,7 +162,7 @@ double GeneNetwork::findSubgraph(size_t root, size_t depth, bool flexSize, NodeL
             }
         }
         if (scaledSize < subgraph.size())
-            subgraph.resize(scaledSize);
+            subgraph.resize(scaledSize);  // crop to best size
     }
     result = subgraph;
     return scaledScore;
@@ -172,7 +175,8 @@ void GeneNetwork::print(std::ostream& os) const {
             os << v << ' ' << degree(v) << " : " << m_neighbors[v] << '\n';
 }
 
-// Could draw graphs directly via Graphviz API to avoid overhead of system() calls
+// Could draw graphs directly via Graphviz API to avoid overhead of system() calls.
+
 void GeneNetwork::write(const NodeList& subgraph, const std::string& filenameDOT,
                         const std::string& filenameSVG) const {
     std::ofstream osDOT(filenameDOT.c_str());
@@ -208,6 +212,7 @@ void GeneNetwork::writeDOTEdge(std::ostream& os, size_t v, size_t w) const {
 }
 
 // Only print edges where both endpoints are in the subgraph.
+
 void GeneNetwork::writeDOT(const NodeList& subgraph, std::ostream& os) const {
     os << "digraph G {\n";  // print header
     os << "overlap = scale ;\n";

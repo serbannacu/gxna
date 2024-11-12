@@ -26,10 +26,10 @@ class GeneNetwork {
         m_neighbors.resize(n);
     }
 
-    void setLabel(size_t n, const std::string& label) {
-        if (n >= m_label.size())
-            m_label.resize(n + 1);
-        m_label[n] = label;
+    void setText(size_t n, const std::string& text) {
+        if (n >= m_text.size())
+            m_text.resize(n + 1);
+        m_text[n] = text;
     }
 
     size_t nNodes() const {
@@ -40,28 +40,29 @@ class GeneNetwork {
         return m_neighbors[node].size();
     }
 
-    // Compute list of nodes at distance <= radius from root
+    // Compute list of nodes at distance <= radius from root.
     NodeList ball(size_t root, size_t radius) const;
 
-    // Set nodes scores: must be used before calling findSubgraph
+    // Set node scores; must be called before findSubgraph.
     void setScores(const std::vector<double>& score, double scalingExponent);
 
+    // Scaled sum of the scores of subgraph nodes.
     double subgraphScore(const NodeList& subgraph) const;
 
-    // Find highest scoring subgraph for a given root, using greedy search
+    // Find highest scoring subgraph for a given root, using greedy search.
     double findSubgraph(size_t root, size_t depth, bool flexSize, NodeList& result);
 
-    // Print all nodes and edges
+    // Print all nodes and edges.
     void print(std::ostream& os) const;
 
-    // Write subgraph into Graphviz DOT file, and optionally render into SVG file
+    // Write subgraph into Graphviz DOT file, and optionally render into SVG file.
     void write(const NodeList& subgraph, const std::string& filenameDOT,
                const std::string& filenameSVG = "") const;
 
  private:
     void addEdge(size_t n1, size_t n2, const std::string& type);
 
-    // Compute scaled score of a subgraph, given the sum of its node scores and size
+    // Compute scaled score of a subgraph, given the sum of its node scores and size.
     double getScaledScore(double sumScore, size_t size) const {
         return (sumScore - size * m_meanScore) / std::pow(size, m_scalingExponent);
     }
@@ -81,7 +82,7 @@ class GeneNetwork {
     };
 
     std::vector<NodeList> m_neighbors;  // for each vertex a list of neighbors
-    std::vector<std::string> m_label;  // (optional) node labels, used for output
+    std::vector<std::string> m_text;  // (optional) node text description, used for output
     std::unordered_map<Edge, std::string, pair_hash> m_edgeType;  // used for output
     size_t m_nEdges = 0;
 
