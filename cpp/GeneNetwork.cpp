@@ -217,7 +217,7 @@ void GeneNetwork::writeDOT(const NodeList& subgraph, std::ostream& os) const {
     os << "digraph G {\n";  // print header
     os << "overlap = scale ;\n";
     for (size_t v : subgraph)
-        writeDOTNode(os, v, v < m_label.size() ? m_label[v] : "");
+        writeDOTNode(os, v, v < m_text.size() ? m_text[v] : "");
     std::unordered_set<size_t> nodes(subgraph.begin(), subgraph.end());
     for (auto v : subgraph) {
         for (auto w : m_neighbors[v]) {
