@@ -85,6 +85,8 @@ double fstatLabel(const double *x, const std::vector<int>& label, const int nLab
     return fstat(v_data);
 }
 
+// Special functions below use Euler–Maclaurin asymptotic expansions.
+
 [[maybe_unused]]
 double harmonic(int n) {
     constexpr double Gamma = 0.577215664901532;  // Euler's constant
@@ -103,7 +105,9 @@ double harmonic2(int n) {
     return Zeta2 - inv * (1 - 0.5 * inv + inv2 / 6 - inv4 / 30);
 }
 
-// Gamma special functions are not optimized, but they are fast enough for our use case
+// Gamma special functions are not optimized, but they are fast enough for our use case.
+// For x > 20, use asymptotic expansions.
+// For smaller x, use the recurrence relation to reduce to the large x case.
 
 double digamma(double x) {
     double sum = 0;
@@ -129,24 +133,30 @@ double trigamma(double x) {
     return val + sum;
 }
 
-// Trigammainv implementation uses bisection. Newton iteration would be faster.
+// Trigammainv implementation uses the bisection method.
+// Newton iteration would be faster.
+
 double trigammainv(double y) {
     // Use asymptotics to avoid overflow or underflow
     if (y < 1e-6)
         return 1 / y + 0.5;
     if (y > 1e6)
         return 1 / std::sqrt(y);
-    double x = 0.5 + 1 / y;
+
+    // Find an interval such that lo < trigamminv(y) < hi.
+    double x = 0.5 + 1 / y;  // good starting point
     double lo = x, hi = x;
     while (trigamma(lo) < y)
         lo /= 2;
     while (trigamma(hi) > y)
         hi *= 2;
+
+    // Bisection method.
     constexpr double eps = 1e-6;
     while (hi - lo > eps) {
         x = 0.5 * (lo + hi);
         double val = trigamma(x);
-        if (val == y)
+        if (val == y)  // found the solution
             break;
         else if (val > y)
             lo = x;
@@ -156,7 +166,7 @@ double trigammainv(double y) {
     return 0.5 * (lo + hi);
 }
 
-void EmpiricalBayes::estimate(double logVarMean, double logVarVar, int nGenes, int df) {
+EmpiricalBayes::EmpiricalBayes(double logVarMean, double logVarVar, int nGenes, int df) {
     if (nGenes < 2 || df <= 0)
         return;
     double y = logVarVar * (1 + 1.0 / (nGenes - 1)) - trigamma(df / 2.0);

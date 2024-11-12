@@ -122,7 +122,7 @@ double trigammainv(double x);
 class EmpiricalBayes {
  public:
     // df is data degrees of freedom
-    void estimate(double logVarMean, double logVarVar, int nGenes, int df);
+    EmpiricalBayes(double logVarMean, double logVarVar, int nGenes, int df);
 
     double shrinkageFactor(double geneVar) const;
     double df() const { return m_df; }
