@@ -23,17 +23,24 @@ void Permutation::randomize(size_t start, size_t len) {
     auto p = &m_v[start];
     for (size_t i = 1; i < len; ++i) {
         size_t j = urand(i+1);  // uniform among 0, 1, ..., i
-        auto temp = p[i];
+        auto temp = p[i];  // swap p[i] and p[j]
         p[i] = p[j];
         p[j] = temp;
     }
 }
 
+void PermutationHistogram::insert(const Permutation& p) {
+    assert(p.size() == m_n);
+    for (size_t i = 0; i < m_n; ++i)
+        ++m_count[i][p[i]];
+    ++m_n_perm;
+}
+
 void PermutationHistogram::print(std::ostream& os, int prec) const {
     os << std::fixed << std::setprecision(prec);
-    for (size_t i = 0; i < m_n; ++i) {
-        for (size_t j = 0; j < m_n; ++j)
-            os << m_count[i][j] / double(m_n_add) << ' ';
+    for (auto& vec : m_count) {
+        for (auto& val : vec)
+            os << val / double(m_n_perm) << ' ';
         os << '\n';
     }
 }
@@ -58,22 +65,22 @@ void PermutationGenerator::showProgress() {
 }
 
 InvariantPermutation::InvariantPermutation(size_t n, size_t limit,
-                                           const std::vector<int>& types)
+                                           const std::vector<int>& label)
     : PermutationGenerator(n, limit) {
-    assert(n == types.size());
-    int type = 0;
-    for (auto val : types) {
-        if (m_typeCount.empty() || type != val) {
-            type = val;
-            m_typeCount.emplace_back(0);
+    assert(n == label.size());
+    int k = -1;  // current label
+    for (auto val : label) {
+        if (m_labelCount.empty() || k != val) {
+            k = val;
+            m_labelCount.emplace_back(0);
         }
-        ++m_typeCount.back();
+        ++m_labelCount.back();
     }
 }
 
 void InvariantPermutation::update() {
     size_t sum = 0;
-    for (auto val : m_typeCount) {
+    for (auto val : m_labelCount) {
         m_perm.randomize(sum, val);
         sum += val;
     }

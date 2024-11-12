@@ -6,6 +6,7 @@
 namespace gxna {
 
 // Permutation of the integers {0, 1, 2, ..., n - 1}
+
 class Permutation {
  public:
     explicit Permutation(size_t n)
@@ -13,10 +14,22 @@ class Permutation {
         init();
     }
 
-    const std::vector<int>& get() const { return m_v; }
+    const std::vector<int>& get() const {
+        return m_v;
+    }
 
-    int operator[](size_t i) const { return m_v[i]; }
+    size_t size() const {
+        return m_v.size();
+    }
 
+    int operator[](size_t i) const {
+        return m_v[i];
+    }
+
+    // Seed random number generator
+    static void seed(int);
+
+    // Scramble vector
     template<typename T>
     std::vector<T> apply(const std::vector<T>& v) const {
         std::vector<T> w(v.size());
@@ -31,8 +44,6 @@ class Permutation {
             m_v[i] = i;
     }
 
-    static void seed(int);
-
     // Uniform random scramble obtained via element swaps
     void randomize(size_t start, size_t len);
 
@@ -44,28 +55,34 @@ class Permutation {
     std::vector<int> m_v;
 };
 
+// For a set of permutations, PermutationHistogram tracks the distribution
+// of each position. It can be used to check if a sample of permutations
+// is approximately uniformly distributed.
+
 class PermutationHistogram {
  public:
-    explicit PermutationHistogram(size_t n) {
-        m_count.resize(n);
+    explicit PermutationHistogram(size_t n)
+        : m_count(n),
+          m_n(n),
+          m_n_perm(0) {
         for (auto& v : m_count)
             v.resize(n);
-        m_n = n;
-        m_n_add = 0;
     }
 
-    void add(const Permutation& p) {
-        for (size_t i = 0; i < m_n; ++i)
-            ++m_count[i][p[i]];
-        ++m_n_add;
+    const auto& getCount(size_t i) {
+        return m_count[i];
     }
 
+    // Add permutation to histogram.
+    void insert(const Permutation& p);
+
+    // For each position, print the distribution of its value.
     void print(std::ostream& os, int prec = 4) const;
 
  private:
     std::vector< std::vector<int> > m_count;
-    size_t m_n;
-    size_t m_n_add;
+    size_t m_n;  // size of each permutation
+    size_t m_n_perm;  // number of permutations
 };
 
 // PermutationGenerator yields a sequence of permutations
@@ -96,13 +113,16 @@ class PermutationGenerator {
         return m_perm;
     }
 
+    // Generate next permutation, return false if the end is reached.
     bool next();
 
  protected:
     Permutation m_perm;
 
  private:
-    virtual void update() = 0;  // generate next permutation, store in m_perm
+    // Generate next permutation, store in m_perm.
+    virtual void update() = 0;
+
     void showProgress();
 
     size_t m_count;  // number of permutations already generated
@@ -126,22 +146,22 @@ class UniformPermutation : public PermutationGenerator {
 };
 
 // InvariantPermutation yields a sequence of uniform INVARIANT random permutations.
-// Each element in {0, 1, 2, ..., n - 1} has an assigned type.
-// Invariance means all permutations $p$ preserve type,
-// so $p(i)$ has the same type as $i$ for all $i$.
-// Thus each permutation generated induces an uniform random permutation within each type.
+// Each element in {0, 1, 2, ..., n - 1} has an assigned label.
+// Invariance means all permutations $p$ preserve labels,
+// so $p(i)$ has the same label as $i$ for all $i$.
+// Thus each invariant permutation induces an uniform random permutation within each type.
 
-// The ctor expectes a vector of types in sequential order,
+// The ctor expectes a vector of labels in sequential order,
 // so {0, 0, 1, 1, 1} is OK but {0, 1, 0, 1, 1} is not.
 
 class InvariantPermutation : public PermutationGenerator {
  public:
-    InvariantPermutation(size_t n, size_t limit, const std::vector<int>& types);
+    InvariantPermutation(size_t n, size_t limit, const std::vector<int>& label);
 
  private:
     virtual void update();
 
-    std::vector<int> m_typeCount;
+    std::vector<int> m_labelCount;
 };
 
 }  // namespace gxna
