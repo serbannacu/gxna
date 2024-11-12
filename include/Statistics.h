@@ -7,11 +7,14 @@ namespace gxna {
 
 // Statistical tools: mean, variance, T-stat, F-stat.
 
+// Fast mean, variance and related statistics.
+// Data can be provided in ctor, or gradually using insert().
+
 class FastDataSet {
  public:
     FastDataSet() {}
 
-    FastDataSet(const std::vector<double>& vec) {
+    explicit FastDataSet(const std::vector<double>& vec) {
         insert(vec);
     }
 
@@ -43,11 +46,11 @@ class FastDataSet {
         return m_n ? m_x / m_n : 0;
     }
 
-    double var() const {
+    double var() const {  // variance
         return m_n > 1 ? getVar() : 0;
     }
 
-    double sd() const {
+    double sd() const {  // standard deviation
         return m_n > 1 ? std::sqrt(getVar()) : 0;
     }
 
@@ -85,22 +88,26 @@ class FastDataSet {
     double m_xx = 0;  // sum of squared elements
 };
 
-// t and F statistics
+// t statistic.
+
 double tstat(const FastDataSet&, const FastDataSet&);  // unequal variances (Welch)
 double tstatEqual(const FastDataSet&, const FastDataSet&);  // equal variances (Student)
-double fstat(const std::vector<FastDataSet>&);
 
-// t and F statistics for an array with associated phenotypes
+// F statistic.
+// v_data has one FastDataSet for each group (samples with the same label).
 
-// phenotypes 0 and 1 define the two data sets, everything else is ignored
-double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, int pheno1);
+double fstat(const std::vector<FastDataSet>& v_data);
 
-// phenotypes are required to be integers btwn 0 and nPheno - 1
-double fstatPheno(const double *x, const std::vector<int>& pheno, const int nPheno);
+// t and F statistics for an array of samples with associated labels.
 
+// label1 and label2 define the two data sets, other labels are ignored
+double tstatLabel(const double *x, const std::vector<int>& label, int label1, int label2);
 
-// Special functions used in empirical Bayes calculations
-// All expect x > 0
+// labels are required to be integers btwn 0 and nLabels - 1
+double fstatLabel(const double *x, const std::vector<int>& label, const int nLabels);
+
+// Special functions used in empirical Bayes calculations.
+// All expect x > 0.
 
 double harmonic(int n);  // approximate sum(1 / k) from 1 to n
 double harmonic2(int n);  // approximate sum(1 / k^2) from 1 to n
@@ -110,7 +117,7 @@ double trigammainv(double x);
 
 // Empirical Bayes shrinkage based on the following paper:
 // Gordon Smyth (2004), Linear models and empirical Bayes methods
-// for assessing differential expression in microarray experiments
+// for assessing differential expression in microarray experiments.
 
 class EmpiricalBayes {
  public:

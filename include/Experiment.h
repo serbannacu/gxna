@@ -67,7 +67,7 @@ class Experiment {
 
     // Computation
     double scoreNodeList(const GeneNetwork::NodeList& genes,
-                         const std::vector<int>& pheno, int nLabels);
+                         const std::vector<int>& label, int nLabels);
     void setShrinkageFactor();
 
     // Input

@@ -174,14 +174,14 @@ void Experiment::run() {
 }
 
 static double computeScore(const std::vector<double>& expression,
-                           const std::vector<int>& pheno, int nLabels) {
+                           const std::vector<int>& label, int nLabels) {
     double score;
     if (nLabels > 2) {  // F statistic
-        double f = fstatPheno(&expression[0], pheno, nLabels);
-        score = f2z(f, nLabels - 1, pheno.size() - nLabels);
+        double f = fstatLabel(&expression[0], label, nLabels);
+        score = f2z(f, nLabels - 1, label.size() - nLabels);
     }
     else {  // t statistic; may want to convert to z-score
-        double t = tstatPheno(&expression[0], pheno, 0, 1);  // pheno 0 vs 1
+        double t = tstatLabel(&expression[0], label, 0, 1);  // pheno 0 vs 1
         score = t;
     }
 
@@ -198,12 +198,12 @@ static double computeScore(const std::vector<double>& expression,
 
 std::vector<double> Experiment::operator()(const Permutation& perm) {
     // Recompute gene scores.
-    auto pheno = perm.apply(m_mainPhenotype.get());
+    auto label = perm.apply(m_mainPhenotype.get());
     auto nLabels = m_mainPhenotype.nLabels();
 
     std::vector<double> geneScorePermAbs;
     for (auto& data : m_gene) {
-        double score = computeScore(data.expression, pheno, nLabels);
+        double score = computeScore(data.expression, label, nLabels);
         if (args.shrink)
             score *= data.shrinkageFactor;
         data.scorePerm = score;
@@ -219,7 +219,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
     clusterScorePermAbs.reserve(m_cluster.size());
     if (args.algoType == AlgoType::Basic) {
         for (auto& cluster : m_cluster) {
-            auto score = scoreNodeList(cluster.nodes, pheno, nLabels);
+            auto score = scoreNodeList(cluster.nodes, label, nLabels);
             clusterScorePermAbs.emplace_back(std::fabs(score));
             if (!m_permCount) {
                 cluster.score = score;
@@ -244,7 +244,7 @@ std::vector<double> Experiment::operator()(const Permutation& perm) {
 
 // Scoring function for MultipleTest, predefined case.
 double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes,
-                                 const std::vector<int>& pheno, int nLabels) {
+                                 const std::vector<int>& label, int nLabels) {
     if (args.sumScore || genes.size() < 2) {  // compute sum(score)
         return m_geneNetwork.subgraphScore(genes);
     }
@@ -256,7 +256,7 @@ double Experiment::scoreNodeList(const GeneNetwork::NodeList& genes,
             else
                 sum += m_gene[gene].expression;
         }
-        return computeScore(sum, pheno, nLabels);
+        return computeScore(sum, label, nLabels);
     }
 }
 

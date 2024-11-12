@@ -10,6 +10,7 @@ using Limits = std::numeric_limits<double>;
 constexpr auto PlusInfinity = Limits::is_iec559 ? Limits::infinity() : Limits::max();
 constexpr auto MinusInfinity = Limits::is_iec559 ? -Limits::infinity() : Limits::min();
 
+// Computes mean / sqrt(variance) while handling corner cases correctly.
 static double safe_div_sqrt(double x, double y) {
     if (y > 0)
         return x / std::sqrt(y);
@@ -29,8 +30,8 @@ double tstat(const FastDataSet& d1, const FastDataSet& d2) {
     double mean1, mean2, var1, var2;
     d1.meanVar(mean1, var1);
     d2.meanVar(mean2, var2);
-    double val = var1 / (n1 - 1) + var2 / (n2 - 1);
-    return safe_div_sqrt(mean2 - mean1, val);
+    double var = var1 / (n1 - 1) + var2 / (n2 - 1);
+    return safe_div_sqrt(mean2 - mean1, var);
 }
 
 double tstatEqual(const FastDataSet& d1, const FastDataSet& d2) {
@@ -39,47 +40,48 @@ double tstatEqual(const FastDataSet& d1, const FastDataSet& d2) {
     int n = n1 + n2;
     if (n1 == 0 || n2 == 0 || n == 2)
         return 0;
-    double val = (d1.rss() + d2.rss()) / (n - 2) * (1.0 / n1 + 1.0 / n2);
-    return safe_div_sqrt(d2.mean() - d1.mean(), val);
+    double var = (d1.rss() + d2.rss()) / (n - 2) * (1.0 / n1 + 1.0 / n2);
+    return safe_div_sqrt(d2.mean() - d1.mean(), var);
 }
 
 double fstat(const std::vector<FastDataSet>& v_data) {
-    double rss = 0;
-    FastDataSet all;
+    double rss = 0;  // residual sum of squares for unrestricted model
+    FastDataSet all;  // merged data set
     for (auto& data : v_data) {
         all += data;
         rss += data.rss();
     }
     auto n = v_data.size();
-    int df = all.size() - n;
+    int df = all.size() - n;  // degrees of freedom
     if (n > 1 && df > 0) {
         if (rss > 0) {
+            // delta >= 0 unless numerical errors occur
             double delta = all.rss() - rss;
-            return delta > 0 ? delta / rss * df / (n - 1) : delta;
+            return delta > 0 ? delta / rss * df / (n - 1) : 0;
         }
-        else
+        else  // avoid division by zero
             return all.rss() > 0 ? PlusInfinity : 0;
     }
     else
         return 0;
 }
 
-double tstatPheno(const double *x, const std::vector<int>& pheno, int pheno0, int pheno1) {
-    FastDataSet ds0, ds1;
-    for (auto p : pheno) {
-        if (p == pheno0)
-            ds0.insert(*x);
-        else if (p == pheno1)
-            ds1.insert(*x);
+double tstatLabel(const double *x, const std::vector<int>& label, int label1, int label2) {
+    FastDataSet d1, d2;
+    for (auto val : label) {
+        if (val == label1)
+            d1.insert(*x);
+        else if (val == label2)
+            d2.insert(*x);
         ++x;
     }
-    return tstat(ds0, ds1);
+    return tstat(d1, d2);
 }
 
-double fstatPheno(const double *x, const std::vector<int>& pheno, const int nPheno) {
-    std::vector<FastDataSet> v_data(nPheno);
-    for (auto p : pheno)
-        v_data[p].insert(*x++);
+double fstatLabel(const double *x, const std::vector<int>& label, const int nLabels) {
+    std::vector<FastDataSet> v_data(nLabels);
+    for (auto val : label)
+        v_data[val].insert(*x++);
     return fstat(v_data);
 }
 
