@@ -207,21 +207,22 @@ Below is a description of the most useful parameters. See the source code for a 
 - `version`: the version is part of the output path.
 - `interactionFile`: gene interaction filename (default: `human.gra`).
 - `probeFile`: probe annotation filename.
-- `algoType`: `Basic` (default) for ball search, `GXNA` for adapted search.
-- `radius`: ball radius for ball search.
-- `depth`: maximum cluster size for adapted search.
-Default is 15, recommended value between 5 and 25.
 - `test`: phenotype used to compute test scores.
 Default is the first phenotype in `.phe` file.
 - `invariant`: phenotype used to generate invariant permutations.
 See section 2.5.3 of the GXNA [paper](https://serbannacu.github.io/gxna/doc/bioinformatics.pdf)
 for details.
+- `algoType`: `Basic` (default) for ball search, `GXNA` for adapted search.
+- `radius`: ball radius for ball search.
+- `depth`: maximum cluster size for adapted search.
+Default is 15, recommended value between 5 and 25.
 - `flexSize`: if true, adapted search may stop before reaching maximum size.
 - `minSD`: only use root genes with standard deviation above this threshold.
 - `nPerms`: number of permutations used to compute *p*-values. Default is 100,
 which is reasonable for exploratory analyses; 1000 or 10000 recommended for definitive estimates.
 - `shrink`: adjust scores via empirical Bayes shrinkage (moderated *t* and *F* statistics).
 See the paper by [Smyth (2004)](https://gksmyth.github.io/pubs/ebayes.pdf) for details.
+- `seed`: seed for random number generator.
 - `nRows`: maximum number of clusters to show in the HTML output.
 - `nDetailed`: maximum number of clusters to write/draw detailed data.
 - `maxOverlap`: hide clusters that overlap above this threshold with higher scoring clusters.

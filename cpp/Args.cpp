@@ -138,9 +138,10 @@ void Args::print(std::ostream& os) const {
     os << "progress " << progress << '\n';
 }
 
-static void log_option(std::ostream& os, const char *name, const char *arg, const char *description) {
+static void log_option(std::ostream& os, const char *name, const char *arg,
+                       const char *description) {
     os << "  -" << std::left
-       << std::setw(12) << name << ' '
+       << std::setw(16) << name << ' '
        << std::setw(8) << arg << "  "
        << std::right << description << '\n';
 }
@@ -151,6 +152,7 @@ void Args::usage(std::ostream& os) const {
     os << "Options:\n";
     log_option(os, "name", "string", "experiment name");
     log_option(os, "version", "string", "output version");
+    log_option(os, "interactionFile", "filename", "gene interaction file");
     log_option(os, "probeFile", "filename", "probe annotation file");
     log_option(os, "test", "string", "test this phenotype");
     log_option(os, "invariant", "string", "use this phenotype for invariant permutations");
