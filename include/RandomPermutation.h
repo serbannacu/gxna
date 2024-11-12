@@ -26,6 +26,10 @@ class Permutation {
         return m_v[i];
     }
 
+    int& operator[](size_t i) {
+        return m_v[i];
+    }
+
     // Seed random number generator
     static void seed(int);
 
@@ -45,11 +49,7 @@ class Permutation {
     }
 
     // Uniform random scramble obtained via element swaps
-    void randomize(size_t start, size_t len);
-
-    void randomize() {
-        randomize(0, m_v.size());
-    }
+    void randomize();
 
  private:
     std::vector<int> m_v;
@@ -95,7 +95,7 @@ class PermutationGenerator {
         : m_perm(n),
           m_count(0),
           m_limit(limit),
-          m_percentage(0),
+          m_percentage(-1),
           m_verbose(false)
     {}
 
@@ -146,13 +146,10 @@ class UniformPermutation : public PermutationGenerator {
 };
 
 // InvariantPermutation yields a sequence of uniform INVARIANT random permutations.
-// Each element in {0, 1, 2, ..., n - 1} has an assigned label.
+// Each element in {0, 1, 2, ..., n - 1} has an assigned label/type.
 // Invariance means all permutations $p$ preserve labels,
 // so $p(i)$ has the same label as $i$ for all $i$.
-// Thus each invariant permutation induces an uniform random permutation within each type.
-
-// The ctor expectes a vector of labels in sequential order,
-// so {0, 0, 1, 1, 1} is OK but {0, 1, 0, 1, 1} is not.
+// Thus each invariant permutation induces an uniform random permutation within each label.
 
 class InvariantPermutation : public PermutationGenerator {
  public:
@@ -161,7 +158,17 @@ class InvariantPermutation : public PermutationGenerator {
  private:
     virtual void update();
 
-    std::vector<int> m_labelCount;
+    struct LabelData {
+        explicit LabelData(const std::vector<int>& positions_)
+            : positions(positions_),
+              perm(positions_.size())
+        {}
+
+        std::vector<int> positions;  // indices of elements with this label
+        Permutation perm;  // used to scramble the positions
+    };
+
+    std::vector<LabelData> m_labelData;  // one per label value
 };
 
 }  // namespace gxna

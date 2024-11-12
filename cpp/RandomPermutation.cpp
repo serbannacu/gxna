@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <random>
 
 namespace gxna {
@@ -19,14 +20,18 @@ void Permutation::seed(int val) {
     mt.seed(val);
 }
 
-void Permutation::randomize(size_t start, size_t len) {
-    auto p = &m_v[start];
+// Apply random permutation to array
+static void scramble(int *p, size_t len) {
     for (size_t i = 1; i < len; ++i) {
         size_t j = urand(i+1);  // uniform among 0, 1, ..., i
         auto temp = p[i];  // swap p[i] and p[j]
         p[i] = p[j];
         p[j] = temp;
     }
+}
+
+void Permutation::randomize() {
+    scramble(&m_v[0], m_v.size());
 }
 
 void PermutationHistogram::insert(const Permutation& p) {
@@ -46,7 +51,7 @@ void PermutationHistogram::print(std::ostream& os, int prec) const {
 }
 
 bool PermutationGenerator::next() {
-    if (m_count >= m_limit)
+    if (m_count >= m_limit)  // done
         return false;
     if (m_count++)  // first next() call leaves Id permutation in place
         update();
@@ -68,21 +73,25 @@ InvariantPermutation::InvariantPermutation(size_t n, size_t limit,
                                            const std::vector<int>& label)
     : PermutationGenerator(n, limit) {
     assert(n == label.size());
-    int k = -1;  // current label
-    for (auto val : label) {
-        if (m_labelCount.empty() || k != val) {
-            k = val;
-            m_labelCount.emplace_back(0);
-        }
-        ++m_labelCount.back();
-    }
+
+    std::map<int, std::vector<int> > label2positions;
+    for (size_t i = 0; i < n; ++i)
+        label2positions[label[i]].emplace_back(i);
+    for (auto x : label2positions)
+        m_labelData.emplace_back(x.second);
 }
 
+// For each label, generate a random permutation of 0, 1, ... k - 1, where
+// k is the number of elements that have this label. Use this permutation
+// to scramble the element positions among themselves. This will generate
+// an invariant permutation.
+
 void InvariantPermutation::update() {
-    size_t sum = 0;
-    for (auto val : m_labelCount) {
-        m_perm.randomize(sum, val);
-        sum += val;
+    for (auto& data : m_labelData) {
+        data.perm.randomize();
+        auto& pos = data.positions;
+        for (size_t i = 0; i < pos.size(); ++i)  // scramble positions
+            m_perm[pos[i]] = pos[data.perm[i]];
     }
 }
 
