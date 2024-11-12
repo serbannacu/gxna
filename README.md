@@ -74,7 +74,8 @@ Inside the repo directory, run `cmake -S . -B build` followed by `cmake --build 
 This will build the binary `build/gxna`.
 
 If [cmake](https://cmake.org/download) is not available on your system,
-you can also try to build with `make -f makefile.unix`.
+you can also try to build directly using the included `Makefile` by running
+`make` from the repo directory.
 This should work on Unix-like systems like Linux and MacOS.
 Make sure `gcc` is installed and it supports C++17.
 

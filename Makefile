@@ -1,3 +1,8 @@
+# The recommended build uses cmake.
+# This file is provided as a workaround in case cmake is not available.
+# It should work on MacOS and Linux.
+# It does not build the unit test binaries.
+
 CC = g++
 CFLAGS = -std=c++17 -Wall -W -MMD -O3
 LDFLAGS =
